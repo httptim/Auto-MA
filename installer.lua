@@ -20,6 +20,7 @@ local FILES = {
     -- Debug tools
     {url = "debug.lua", path = INSTALL_DIR .. "/debug.lua"},
     {url = "me-bridge-docs.lua", path = INSTALL_DIR .. "/me-bridge-docs.lua"},
+    {url = "altar-debug.lua", path = INSTALL_DIR .. "/altar-debug.lua"},
     
     -- Documentation
     {url = "README.md", path = INSTALL_DIR .. "/README.md"},

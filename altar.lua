@@ -69,18 +69,33 @@ end
 
 -- Distribute ingredients to pedestals
 local function distributeIngredients(ingredients)
-    -- MysticalAgriculture typically uses 8 pedestals with one ingredient type each
-    -- Common pattern: 4 of material + 4 essence, or 8 essence + 1 base in center
+    -- MysticalAgriculture standard pattern:
+    -- - Seed base goes in the altar (center)
+    -- - Other ingredients distributed to pedestals
+    -- - Common pattern: 4 material + 4 essence = 8 pedestals
     
     local distributed = {}
+    local pedestalIngredients = {}
+    local seedBase = nil
+    
+    -- Separate seed base from pedestal ingredients
+    for _, ingredient in ipairs(ingredients) do
+        if ingredient.name:find("seed_base") then
+            seedBase = ingredient
+        else
+            table.insert(pedestalIngredients, ingredient)
+        end
+    end
+    
+    -- Distribute non-base ingredients to pedestals
     local pedestalIndex = 1
     
-    for _, ingredient in ipairs(ingredients) do
+    for _, ingredient in ipairs(pedestalIngredients) do
         local remaining = ingredient.count
         
-        -- For ingredients that need to be split across pedestals
+        -- Distribute this ingredient across pedestals
         while remaining > 0 and pedestalIndex <= 8 do
-            local toPlace = math.min(remaining, 1) -- Usually 1 per pedestal
+            local toPlace = 1 -- Always 1 per pedestal for MysticalAgriculture
             
             -- Export to pedestal
             local success = me.exportItem(ingredient.name, toPlace, config.pedestals[pedestalIndex])
@@ -97,9 +112,13 @@ local function distributeIngredients(ingredients)
             remaining = remaining - toPlace
             pedestalIndex = pedestalIndex + 1
         end
+        
+        if remaining > 0 then
+            error("Not enough pedestals for all ingredients! Need " .. pedestalIndex + remaining - 1)
+        end
     end
     
-    return distributed
+    return distributed, seedBase
 end
 
 -- Start crafting process
@@ -125,6 +144,8 @@ end
 
 -- Start a single craft iteration
 function altar.startSingleCraft(seed)
+    print("Starting craft for: " .. seed.name)
+    
     -- Calculate ingredients for one craft
     local ingredients = {}
     for _, ing in ipairs(seed.ingredients) do
@@ -135,20 +156,25 @@ function altar.startSingleCraft(seed)
     end
     
     -- Distribute ingredients to pedestals
-    local distributed = distributeIngredients(ingredients)
+    local distributed, seedBase = distributeIngredients(ingredients)
     
-    -- If there's a center item (like prosperity seed base), put it in altar
-    for _, ing in ipairs(ingredients) do
-        if ing.name:find("seed_base") then
-            me.exportItem(ing.name, 1, config.altar)
-            break
+    print("Distributed " .. #distributed .. " items to pedestals")
+    
+    -- Place seed base in altar if present
+    if seedBase then
+        print("Placing seed base in altar: " .. seedBase.name)
+        local success = me.exportItem(seedBase.name, seedBase.count, config.altar)
+        if not success then
+            error("Failed to place seed base in altar")
         end
     end
     
     -- Activate altar with redstone pulse on all sides
+    print("Waiting for items to settle...")
     sleep(0.5) -- Let items settle
     
     -- Pulse all sides of the Redstone Integrator
+    print("Activating altar with redstone pulse...")
     local sides = {"north", "south", "east", "west", "up", "down"}
     for _, side in ipairs(sides) do
         redstoneIntegrator.setOutput(side, true)
@@ -162,6 +188,7 @@ function altar.startSingleCraft(seed)
     
     -- Altar is now crafting
     craftState.craftStartTime = os.clock()
+    print("Altar activated, crafting started")
 end
 
 -- Check if current craft is complete

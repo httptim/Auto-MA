@@ -140,11 +140,7 @@ local function setupWizard()
     -- Select redstone integrator
     if peripherals.redstoneIntegrator and #peripherals.redstoneIntegrator > 0 then
         selectedConfig.redstoneIntegrator = selectFromList("Select Redstone Integrator for altar activation:", peripherals.redstoneIntegrator)
-        
-        -- Ask which side faces the altar
-        print("\nWhich side of the Redstone Integrator faces the altar?")
-        local sides = {"north", "south", "east", "west", "up", "down"}
-        selectedConfig.redstoneSide = selectFromList("Select side:", sides)
+        -- No need to ask for side anymore - we pulse all sides
     else
         error("No Redstone Integrator found! This is required for altar activation.")
     end
@@ -169,8 +165,7 @@ local function saveConfig(configData)
         file.write("        \"" .. pedestal .. "\",\n")
     end
     file.write("    },\n")
-    file.write("    redstoneIntegrator = \"" .. configData.redstoneIntegrator .. "\",\n")
-    file.write("    redstoneSide = \"" .. configData.redstoneSide .. "\"\n")
+    file.write("    redstoneIntegrator = \"" .. configData.redstoneIntegrator .. "\"\n")
     file.write("}\n")
     
     file.close()
