@@ -1,17 +1,27 @@
 -- Debug tool to list ME items and find correct names
 -- Run this to see all items in your ME system
 
+-- Load config
 local config = dofile("/mystical-automation/config.lua")
-local me = dofile("/mystical-automation/me.lua")
 
--- Initialize ME
-me.init(config)
+print("Connecting to ME Bridge: " .. config.meBridge)
 
-print("Connecting to ME system...")
+-- Connect directly to ME Bridge
+local bridge = peripheral.wrap(config.meBridge)
+if not bridge then
+    error("Failed to connect to ME Bridge: " .. config.meBridge)
+end
+
+print("Connected! Getting items...")
 sleep(1)
 
--- Get all items
-local items = me.listItems()
+-- Get all items directly
+local success, items = pcall(function() return bridge.listItems() end)
+if not success then
+    error("Failed to list items: " .. tostring(items))
+end
+
+items = items or {}
 
 print("Found " .. #items .. " item types in ME system")
 print("")
