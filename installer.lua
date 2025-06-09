@@ -413,7 +413,7 @@ local function install()
         term.setCursorPos(1, 1)
         term.setTextColor(colors.white)
         term.setBackgroundColor(colors.black)
-        shell.run("mystical")
+        shell.run("startup")
     end
     
     return true
