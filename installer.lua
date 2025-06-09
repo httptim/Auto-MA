@@ -413,7 +413,7 @@ local function install()
         term.setCursorPos(1, 1)
         term.setTextColor(colors.white)
         term.setBackgroundColor(colors.black)
-        shell.run("startup")
+        shell.run("startup") -- Change to startup file for program
     end
     
     return true
