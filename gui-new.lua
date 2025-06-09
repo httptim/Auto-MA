@@ -112,7 +112,7 @@ local function addButton(id, x, y, w, h, data)
     }
 end
 
--- Show main screen with seed list
+-- Show main screen with seed grid
 function gui.showMainScreen()
     clear()
     buttons = {}
@@ -120,58 +120,97 @@ function gui.showMainScreen()
     
     drawHeader("MysticalAgriculture Automation")
     
-    -- Get seeds list
+    -- Use order from seeds if available, otherwise build list
     local seedList = {}
-    for id, seed in pairs(seeds) do
-        table.insert(seedList, {id = id, seed = seed})
+    if seeds.order then
+        -- Use predefined order
+        for _, id in ipairs(seeds.order) do
+            if seeds[id] then
+                table.insert(seedList, {id = id, seed = seeds[id]})
+            end
+        end
+    else
+        -- Fallback to building list
+        for id, seed in pairs(seeds) do
+            if id ~= "order" then  -- Skip the order field itself
+                table.insert(seedList, {id = id, seed = seed})
+            end
+        end
+        -- Sort by name
+        table.sort(seedList, function(a, b)
+            local aName = a.seed.name or a.id
+            local bName = b.seed.name or b.id
+            return aName < bName
+        end)
     end
     
-    -- Sort by name only (no tier field in data)
-    table.sort(seedList, function(a, b)
-        local aName = a.seed.name or a.id
-        local bName = b.seed.name or b.id
-        return aName < bName
-    end)
+    -- Grid layout calculations
+    local buttonWidth = 10
+    local buttonHeight = 3
+    local spacing = 2
+    local cols = math.floor((width - spacing) / (buttonWidth + spacing))
+    local rows = math.floor((height - 8) / (buttonHeight + spacing))
+    seedsPerPage = cols * rows
     
     -- Calculate pagination
     totalPages = math.ceil(#seedList / seedsPerPage)
     local startIdx = (currentPage - 1) * seedsPerPage + 1
     local endIdx = math.min(currentPage * seedsPerPage, #seedList)
     
-    -- Draw seeds
+    -- Draw seed grid
+    local seedIndex = startIdx
     local y = 3
-    for i = startIdx, endIdx do
-        local item = seedList[i]
-        local seed = item.seed
-        local canCraft, _ = me.checkIngredients(seed.ingredients, 1)
+    
+    for row = 1, rows do
+        local x = spacing
         
-        -- Determine color
-        local bgColor = canCraft and theme.buttonActive or theme.button
+        for col = 1, cols do
+            if seedIndex > endIdx then break end
+            
+            local item = seedList[seedIndex]
+            if item then
+                local seed = item.seed
+                local canCraft, _ = me.checkIngredients(seed.ingredients, 1)
+                
+                -- Determine color (green if available, red if not)
+                local bgColor = canCraft and colors.green or colors.red
+                
+                -- Use short name or truncate regular name
+                local displayName = seed.shortName or seed.name:sub(1, 8)
+                
+                -- Draw button
+                drawButton(x, y, buttonWidth, buttonHeight, displayName, bgColor, colors.white)
+                
+                -- Register button
+                addButton("seed_" .. seedIndex, x, y, buttonWidth, buttonHeight, {type = "seed", id = item.id})
+            end
+            
+            x = x + buttonWidth + spacing
+            seedIndex = seedIndex + 1
+        end
         
-        -- Draw button (without tier since it's not in the data)
-        drawButton(2, y, width - 4, 2, seed.name, bgColor)
-        
-        -- Register button
-        addButton("seed_" .. i, 2, y, width - 4, 2, {type = "seed", id = item.id})
-        
-        y = y + 3
+        y = y + buttonHeight + spacing
     end
     
-    -- Pagination
+    -- Navigation buttons
+    local navY = height - 3
+    
+    if currentPage > 1 then
+        drawButton(spacing, navY, 15, 3, "< Previous", colors.blue, colors.white)
+        addButton("prev", spacing, navY, 15, 3, {type = "page", action = "prev"})
+    end
+    
+    if currentPage < totalPages then
+        drawButton(width - 15 - spacing, navY, 15, 3, "Next >", colors.blue, colors.white)
+        addButton("next", width - 15 - spacing, navY, 15, 3, {type = "page", action = "next"})
+    end
+    
+    -- Page indicator
     if totalPages > 1 then
-        local pageText = "Page " .. currentPage .. "/" .. totalPages
-        monitor.setCursorPos(math.floor((width - #pageText) / 2), height - 1)
+        local pageText = "Page " .. currentPage .. " of " .. totalPages
+        monitor.setCursorPos(math.floor((width - #pageText) / 2), navY + 1)
+        monitor.setTextColor(colors.white)
         monitor.write(pageText)
-        
-        if currentPage > 1 then
-            drawButton(2, height - 1, 8, 1, "< Prev", theme.button)
-            addButton("prev", 2, height - 1, 8, 1, {type = "page", action = "prev"})
-        end
-        
-        if currentPage < totalPages then
-            drawButton(width - 9, height - 1, 8, 1, "Next >", theme.button)
-            addButton("next", width - 9, height - 1, 8, 1, {type = "page", action = "next"})
-        end
     end
 end
 

@@ -307,6 +307,12 @@ local function startCraft(seed, quantity)
             end
         end
     )
+    
+    -- Ensure we're back to main screen after craft completes
+    if state.screen == "crafting" then
+        state.screen = "main"
+        gui.showMainScreen()
+    end
 end
 
 -- Event handlers

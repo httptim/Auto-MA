@@ -224,7 +224,7 @@ function altar.getProgress()
     end
     
     local elapsed = os.clock() - craftState.craftStartTime
-    local expectedTime = craftState.seed.time or 20
+    local expectedTime = craftState.seed.time or 5  -- Reduced default time
     
     -- Base progress from completed crafts
     local baseProgress = (craftState.currentCraft - 1) / craftState.quantity
