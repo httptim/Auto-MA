@@ -128,10 +128,16 @@ function gui.showMainScreen()
     
     -- Sort by tier then name
     table.sort(seedList, function(a, b)
-        if a.seed.tier == b.seed.tier then
-            return a.seed.name < b.seed.name
+        -- Handle nil values
+        local aTier = a.seed.tier or 1
+        local bTier = b.seed.tier or 1
+        local aName = a.seed.name or a.id
+        local bName = b.seed.name or b.id
+        
+        if aTier == bTier then
+            return aName < bName
         end
-        return a.seed.tier < b.seed.tier
+        return aTier < bTier
     end)
     
     -- Calculate pagination
