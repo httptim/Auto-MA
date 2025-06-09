@@ -19,7 +19,7 @@ local totalPages = 1
 local seedsPerPage = 1
 
 -- Color scheme
-local colors = {
+local theme = {
     background = colors.black,
     header = colors.blue,
     headerText = colors.white,
@@ -47,7 +47,7 @@ function gui.init(cfg, meModule, seedsData)
     
     -- Set up monitor
     monitor.setTextScale(0.5)
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
     monitor.clear()
     
     -- Get dimensions ONCE during init
@@ -62,7 +62,7 @@ end
 
 -- Clear screen
 local function clear()
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
     monitor.setTextColor(colors.white)
     monitor.clear()
     monitor.setCursorPos(1, 1)
@@ -76,7 +76,7 @@ local function drawHeader(title)
     monitor.write(string.rep(" ", width))
     monitor.setCursorPos(math.floor((width - #title) / 2), 1)
     monitor.write(title)
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
 end
 
 -- Draw a button
@@ -98,7 +98,7 @@ local function drawButton(x, y, w, h, text, bgColor, textColor)
     monitor.setCursorPos(textX, textY)
     monitor.write(text)
     
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
 end
 
 -- Register a button
@@ -147,7 +147,7 @@ function gui.showMainScreen()
         local canCraft = me.hasIngredients(seed.ingredients)
         
         -- Determine color
-        local bgColor = canCraft and colors.buttonActive or colors.button
+        local bgColor = canCraft and theme.buttonActive or theme.button
         
         -- Draw button
         drawButton(2, y, width - 4, 2, "T" .. seed.tier .. " - " .. seed.name, bgColor)
@@ -165,12 +165,12 @@ function gui.showMainScreen()
         monitor.write(pageText)
         
         if currentPage > 1 then
-            drawButton(2, height - 1, 8, 1, "< Prev", colors.button)
+            drawButton(2, height - 1, 8, 1, "< Prev", theme.button)
             addButton("prev", 2, height - 1, 8, 1, {type = "page", action = "prev"})
         end
         
         if currentPage < totalPages then
-            drawButton(width - 9, height - 1, 8, 1, "Next >", colors.button)
+            drawButton(width - 9, height - 1, 8, 1, "Next >", theme.button)
             addButton("next", width - 9, height - 1, 8, 1, {type = "page", action = "next"})
         end
     end
@@ -192,23 +192,23 @@ function gui.showQuantitySelector(seed, quantity)
     
     -- Adjustment buttons
     local btnY = 12
-    drawButton(10, btnY, 8, 3, "-5", colors.button)
+    drawButton(10, btnY, 8, 3, "-5", theme.button)
     addButton("minus5", 10, btnY, 8, 3, {type = "adjust", action = "-5"})
     
-    drawButton(20, btnY, 8, 3, "-1", colors.button)
+    drawButton(20, btnY, 8, 3, "-1", theme.button)
     addButton("minus1", 20, btnY, 8, 3, {type = "adjust", action = "-1"})
     
-    drawButton(width - 28, btnY, 8, 3, "+1", colors.button)
+    drawButton(width - 28, btnY, 8, 3, "+1", theme.button)
     addButton("plus1", width - 28, btnY, 8, 3, {type = "adjust", action = "+1"})
     
-    drawButton(width - 18, btnY, 8, 3, "+5", colors.button)
+    drawButton(width - 18, btnY, 8, 3, "+5", theme.button)
     addButton("plus5", width - 18, btnY, 8, 3, {type = "adjust", action = "+5"})
     
     -- Craft and Cancel buttons
-    drawButton(math.floor(width/2) - 20, 20, 18, 3, "Craft", colors.buttonActive)
+    drawButton(math.floor(width/2) - 20, 20, 18, 3, "Craft", theme.buttonActive)
     addButton("craft", math.floor(width/2) - 20, 20, 18, 3, {type = "craft"})
     
-    drawButton(math.floor(width/2) + 2, 20, 18, 3, "Cancel", colors.button)
+    drawButton(math.floor(width/2) + 2, 20, 18, 3, "Cancel", theme.button)
     addButton("cancel", math.floor(width/2) + 2, 20, 18, 3, {type = "cancel"})
 end
 
@@ -232,7 +232,7 @@ function gui.showProgress(seed, progress, status)
     local barHeight = 3
     
     -- Draw progress bar background
-    monitor.setBackgroundColor(colors.progressBar)
+    monitor.setBackgroundColor(theme.progressBar)
     for i = 0, barHeight - 1 do
         monitor.setCursorPos(barX, barY + i)
         monitor.write(string.rep(" ", barWidth))
@@ -241,7 +241,7 @@ function gui.showProgress(seed, progress, status)
     -- Draw progress bar fill
     local fillWidth = math.floor(barWidth * progress)
     if fillWidth > 0 then
-        monitor.setBackgroundColor(colors.progressFill)
+        monitor.setBackgroundColor(theme.progressFill)
         for i = 0, barHeight - 1 do
             monitor.setCursorPos(barX, barY + i)
             monitor.write(string.rep(" ", fillWidth))
@@ -249,7 +249,7 @@ function gui.showProgress(seed, progress, status)
     end
     
     -- Draw percentage text
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
     monitor.setTextColor(colors.white)
     local percentText = math.floor(progress * 100) .. "%"
     monitor.setCursorPos(math.floor((width - #percentText) / 2), barY + barHeight + 2)
@@ -271,7 +271,7 @@ function gui.showProgress(seed, progress, status)
     monitor.setCursorPos(barX - 1, barY + barHeight)
     monitor.write("+" .. string.rep("-", barWidth) .. "+")
     
-    monitor.setBackgroundColor(colors.background)
+    monitor.setBackgroundColor(theme.background)
 end
 
 -- Show message
@@ -282,8 +282,8 @@ function gui.showMessage(msg)
     
     -- Show message at bottom
     monitor.setCursorPos(2, height)
-    monitor.setBackgroundColor(colors.background)
-    monitor.setTextColor(colors.info)
+    monitor.setBackgroundColor(theme.background)
+    monitor.setTextColor(theme.info)
     monitor.clearLine()
     monitor.write(msg)
     
@@ -300,8 +300,8 @@ function gui.showError(msg)
     
     -- Show error at bottom
     monitor.setCursorPos(2, height)
-    monitor.setBackgroundColor(colors.background)
-    monitor.setTextColor(colors.error)
+    monitor.setBackgroundColor(theme.background)
+    monitor.setTextColor(theme.error)
     monitor.clearLine()
     monitor.write("ERROR: " .. msg)
     
