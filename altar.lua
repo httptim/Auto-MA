@@ -1,5 +1,5 @@
--- Altar Control Module
--- Manages infusion altar, pedestals, and crafting process
+-- Altar Control Module - Rewritten
+-- Clean implementation with proper progress tracking
 
 local altar = {}
 local config = nil
@@ -15,13 +15,15 @@ local craftState = {
     seed = nil,
     quantity = 0,
     startTime = 0,
-    craftStarted = false  -- Track if altar consumed items
+    currentCraft = 1,
+    craftStartTime = 0,
+    craftStarted = false
 }
 
 -- Initialize altar system
 function altar.init(cfg, meModule)
     config = cfg
-    me = meModule -- Use the already initialized ME module
+    me = meModule
     
     -- Connect to altar
     altarInv = peripheral.wrap(config.altar)
@@ -38,9 +40,6 @@ function altar.init(cfg, meModule)
         pedestals[i] = pedestal
     end
     
-    -- No redstone integrator needed - using always-on redstone block
-    
-    print("Altar system initialized with " .. #pedestals .. " pedestals")
     return true
 end
 
@@ -61,25 +60,18 @@ function altar.cleanup()
     end
     
     craftState.active = false
+    craftState.craftStarted = false
 end
 
 -- Distribute ingredients to pedestals
 local function distributeIngredients(ingredients)
-    -- MysticalAgriculture standard pattern:
-    -- - Seed base goes in the altar (center)
-    -- - Other ingredients distributed to pedestals
-    -- - Common pattern: 4 material + 4 essence = 8 pedestals
-    
     local distributed = {}
     local pedestalIngredients = {}
     local seedBase = nil
     
     -- Separate crafting seed from pedestal ingredients
     for _, ingredient in ipairs(ingredients) do
-        -- Check for any tier crafting seed (tier1 through tier5)
-        if ingredient.name:find("tier%d_crafting_seed") or 
-           ingredient.name:find("crafting_seed") or 
-           ingredient.name:find("seed_base") then
+        if ingredient.name:find("seed_base") then
             seedBase = ingredient
         else
             table.insert(pedestalIngredients, ingredient)
@@ -113,7 +105,7 @@ local function distributeIngredients(ingredients)
         end
         
         if remaining > 0 then
-            error("Not enough pedestals for all ingredients! Need " .. pedestalIndex + remaining - 1)
+            error("Not enough pedestals for all ingredients!")
         end
     end
     
@@ -129,8 +121,7 @@ function altar.startCraft(seed, quantity)
     -- Clean up any leftover items first
     altar.cleanup()
     
-    -- For multiple quantities, we'll craft them one at a time
-    -- (Infusion altar only makes 1 seed at a time)
+    -- Set craft state
     craftState.active = true
     craftState.seed = seed
     craftState.quantity = quantity
@@ -144,35 +135,31 @@ end
 
 -- Start a single craft iteration
 function altar.startSingleCraft(seed)
-    print("Starting craft for: " .. seed.name)
     
     -- Calculate ingredients for one craft
     local ingredients = {}
     for _, ing in ipairs(seed.ingredients) do
         table.insert(ingredients, {
             name = ing.name,
-            count = ing.count -- For 1 seed
+            count = ing.count
         })
     end
     
     -- Distribute ingredients to pedestals
     local distributed, seedBase = distributeIngredients(ingredients)
     
-    print("Distributed " .. #distributed .. " items to pedestals")
+    -- Items distributed to pedestals
     
-    -- Place seed base in altar if present
+    -- Place seed base in altar
     if seedBase then
-        print("Placing seed base in altar: " .. seedBase.name)
         local success = me.exportItem(seedBase.name, seedBase.count, config.altar)
         if not success then
             error("Failed to place seed base in altar")
         end
     end
     
-    -- Altar should start automatically with redstone block
+    -- Mark craft start time
     craftState.craftStartTime = os.clock()
-    print("Items placed, altar should start crafting")
-    -- Note: Removed sleep to avoid blocking event loop
 end
 
 -- Check if current craft is complete
@@ -181,53 +168,44 @@ function altar.checkComplete()
         return false
     end
     
-    -- Assume craft starts after a short delay with redstone block
-    -- (Since we can't reliably detect when altar consumes items)
-    if not craftState.craftStarted then
-        local elapsed = os.clock() - craftState.craftStartTime
-        if elapsed > 2 then  -- After 2 seconds, assume craft started
-            craftState.craftStarted = true
-            print("Assuming craft started after 2 second delay")
-        end
+    -- Wait a bit before checking (altar needs time to consume items)
+    local elapsed = os.clock() - craftState.craftStartTime
+    if elapsed < 1 then  -- Reduced from 2 to 1 second
+        return false
     end
     
-    -- Check altar for any output (anything other than base seed)
+    -- Mark craft as started after 1 second
+    if not craftState.craftStarted and elapsed >= 1 then
+        craftState.craftStarted = true
+    end
+    
+    -- Check altar for output
     local altarItems = altarInv.list()
     
-    -- Look for any item that's not the prosperity seed base
     for slot, item in pairs(altarItems) do
-        -- If we find any item that's not the base seed, it's the output
+        -- Any item that's not the seed base is output
         if item.name ~= "mysticalagriculture:prosperity_seed_base" then
-            -- Found output! Import to ME
-            print("Craft complete! Found output: " .. item.name)
+            -- Found output!
             me.importItem(item.name, item.count, config.altar)
             
             -- Check if we need more crafts
             if craftState.currentCraft < craftState.quantity then
                 craftState.currentCraft = craftState.currentCraft + 1
-                craftState.craftStarted = false  -- Reset for next craft
+                craftState.craftStarted = false
                 altar.startSingleCraft(craftState.seed)
                 return false -- Still crafting more
             else
                 -- All done!
                 craftState.active = false
-                altar.cleanup() -- Clean up any remaining items
+                altar.cleanup()
                 return true
             end
         end
     end
     
     -- Check for timeout
-    local elapsed = os.clock() - craftState.craftStartTime
-    local timeout = config.settings and config.settings.craftTimeout or 30
-    
-    -- If craft hasn't started yet, don't timeout as quickly
-    if not craftState.craftStarted and elapsed < 10 then
-        return false
-    end
-    
-    if elapsed > timeout then
-        error("Craft timeout - no output detected")
+    if elapsed > 30 then
+        error("Craft timeout - no output detected after 30 seconds")
     end
     
     return false
@@ -240,16 +218,21 @@ function altar.getProgress()
     end
     
     local elapsed = os.clock() - craftState.craftStartTime
-    local expectedTime = craftState.seed.time or 20
+    -- Ignore seed time, use realistic altar craft time (about 5-7 seconds)
+    local expectedTime = 6
     
-    -- If craft hasn't started yet, show minimal progress
-    if not craftState.craftStarted then
-        return (craftState.currentCraft - 1) / craftState.quantity + (0.1 / craftState.quantity)
-    end
-    
-    -- Add progress for completed crafts
+    -- Base progress from completed crafts
     local baseProgress = (craftState.currentCraft - 1) / craftState.quantity
-    local currentProgress = math.min(1, elapsed / expectedTime) / craftState.quantity
+    
+    -- Current craft progress
+    local currentProgress = 0
+    if craftState.craftStarted then
+        -- After craft starts, show actual progress
+        currentProgress = math.min(1, elapsed / expectedTime) / craftState.quantity
+    else
+        -- Before craft starts, show quick initial progress
+        currentProgress = math.min(0.15, elapsed) / craftState.quantity
+    end
     
     return baseProgress + currentProgress
 end
@@ -257,43 +240,29 @@ end
 -- Get craft status
 function altar.getStatus()
     if not craftState.active then
-        return "idle"
+        return "Idle"
     end
     
-    return string.format("Crafting %s (%d/%d)", 
-        craftState.seed.name,
-        craftState.currentCraft,
-        craftState.quantity
-    )
+    local elapsed = os.clock() - craftState.craftStartTime
+    
+    if not craftState.craftStarted then
+        return string.format("Preparing craft %d/%d...", craftState.currentCraft, craftState.quantity)
+    else
+        return string.format("Crafting %s (%d/%d) - %.1fs", 
+            craftState.seed.name,
+            craftState.currentCraft,
+            craftState.quantity,
+            elapsed
+        )
+    end
 end
 
--- Force stop current craft
+-- Cancel current craft
 function altar.cancel()
     if craftState.active then
         altar.cleanup()
         craftState.active = false
     end
-end
-
--- Test altar connectivity
-function altar.test()
-    print("Testing altar system...")
-    
-    -- No redstone test needed - using always-on redstone block
-    print("Using always-on redstone block - no test needed")
-    
-    -- Test pedestals
-    print("Found " .. #pedestals .. " pedestals")
-    for i, pedestal in ipairs(pedestals) do
-        local size = pedestal.size()
-        print("  Pedestal " .. i .. ": " .. size .. " slots")
-    end
-    
-    -- Test altar
-    local altarSize = altarInv.size()
-    print("Altar has " .. altarSize .. " slots")
-    
-    return true
 end
 
 return altar

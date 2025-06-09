@@ -1,9 +1,9 @@
--- MysticalAgriculture Automation System
--- Main startup file with setup wizard
+-- MysticalAgriculture Automation System - Rewritten
+-- Clean implementation with working progress tracking
 
 -- Constants
 local CONFIG_FILE = "config.lua"
-local VERSION = "1.0.0"
+local VERSION = "2.0.0"
 
 -- Global modules (loaded after config)
 local config = nil
@@ -11,6 +11,16 @@ local me = nil
 local altar = nil
 local gui = nil
 local seeds = nil
+
+-- Main program state
+local state = {
+    crafting = false,
+    currentSeed = nil,
+    currentQuantity = 0,
+    craftStartTime = 0,
+    screen = "main",
+    updateTimer = nil
+}
 
 -- Setup wizard functions
 local function detectPeripherals()
@@ -69,7 +79,6 @@ local function setupWizard()
     end
     
     -- Select inventories for altar and pedestals
-    -- MysticalAgriculture blocks might show as different types
     local inventories = {}
     
     -- Collect all inventory-like peripherals
@@ -89,22 +98,6 @@ local function setupWizard()
                 table.insert(inventories, name)
             end
         end
-    end
-    
-    -- Debug: Show what we found
-    print("\nFound " .. #inventories .. " inventory-like peripherals:")
-    for pType, pList in pairs(peripherals) do
-        if #pList > 0 then
-            print("  " .. pType .. ": " .. #pList)
-        end
-    end
-    
-    if #inventories < 9 then
-        print("\nDetected peripheral types:")
-        for pType, _ in pairs(peripherals) do
-            print("  - " .. pType)
-        end
-        error("Not enough inventories found! Need at least 9 (1 altar + 8 pedestals). Found: " .. #inventories)
     end
     
     print("\nNow we'll set up the altar and pedestals.")
@@ -136,8 +129,6 @@ local function setupWizard()
         end
         pedestalChoices = newChoices
     end
-    
-    -- No redstone integrator needed - using always-on redstone block
     
     return selectedConfig
 end
@@ -182,10 +173,10 @@ local function loadModules()
         error("Failed to load configuration!")
     end
     
-    -- Load modules (using absolute paths)
+    -- Load modules
     local baseDir = "/mystical-automation"
     me = dofile(baseDir .. "/me.lua")
-    altar = dofile(baseDir .. "/altar.lua") 
+    altar = dofile(baseDir .. "/altar.lua")
     gui = dofile(baseDir .. "/gui.lua")
     seeds = dofile(baseDir .. "/seeds.lua")
     
@@ -210,34 +201,118 @@ local function loadModules()
     print("All systems initialized successfully!")
 end
 
--- Main program state
-local state = {
-    crafting = false,
-    currentSeed = nil,
-    currentQuantity = 0,
-    craftStartTime = 0,
-    screen = "main" -- main, quantity, crafting
-}
-
--- Timer variable at module level so it's accessible everywhere
-local updateTimer = nil
-
--- Debug log file
-local debugLog = nil
-local function debug(message)
-    if not debugLog then
-        debugLog = fs.open("/debug-log.txt", "w")
+-- Craft monitoring function - runs in parallel
+local function monitorCraft()
+    while state.crafting do
+        -- Update progress
+        local progress = altar.getProgress()
+        local status = altar.getStatus()
+        
+        -- Update GUI
+        gui.showProgress(state.currentSeed, progress, status)
+        
+        -- Check if complete
+        if altar.checkComplete() then
+            state.crafting = false
+            gui.showMessage("Craft complete!")
+            sleep(2)
+            state.screen = "main"
+            gui.showMainScreen()
+            break
+        end
+        
+        -- Check for timeout
+        local elapsed = os.clock() - state.craftStartTime
+        if elapsed > ((state.currentSeed.time or 20) + 10) then
+            state.crafting = false
+            gui.showError("Craft timeout!")
+            altar.cleanup()
+            sleep(2)
+            state.screen = "main"
+            gui.showMainScreen()
+            break
+        end
+        
+        -- Small delay to not spam updates
+        sleep(0.2)  -- Faster updates for smoother progress bar
     end
-    debugLog.writeLine(os.clock() .. ": " .. message)
-    debugLog.flush()
 end
 
--- Forward declare startCraft
-local startCraft
+-- Start crafting
+local function startCraft(seed, quantity)
+    -- Validate seed has required fields
+    if not seed.ingredients then
+        gui.showError("Invalid seed: no ingredients defined")
+        sleep(2)
+        state.screen = "main"
+        gui.showMainScreen()
+        return
+    end
+    
+    -- Check ingredients
+    local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
+    
+    if not canCraft then
+        gui.showError("Missing: " .. missing)
+        sleep(2)
+        state.screen = "main"
+        gui.showMainScreen()
+        return
+    end
+    
+    -- Set state
+    state.crafting = true
+    state.currentSeed = seed
+    state.currentQuantity = quantity
+    state.craftStartTime = os.clock()
+    state.screen = "crafting"
+    
+    -- Start the craft
+    local success, err = pcall(altar.startCraft, seed, quantity)
+    if not success then
+        gui.showError("Craft failed: " .. tostring(err))
+        state.crafting = false
+        sleep(2)
+        state.screen = "main"
+        gui.showMainScreen()
+        return
+    end
+    
+    -- Show initial progress
+    gui.showProgress(seed, 0, "Starting craft...")
+    
+    -- Start monitoring in parallel
+    parallel.waitForAny(
+        monitorCraft,
+        function()
+            -- Keep main loop running for touch events
+            while state.crafting do
+                local event, p1, p2, p3 = os.pullEvent()
+                if event == "monitor_touch" then
+                    -- Show message that craft is in progress
+                    gui.showMessage("Craft in progress...")
+                elseif event == "key" and p1 == keys.q then
+                    -- Allow canceling
+                    state.crafting = false
+                    altar.cancel()
+                    gui.showMessage("Craft cancelled")
+                    sleep(1)
+                    state.screen = "main"
+                    gui.showMainScreen()
+                end
+            end
+        end
+    )
+    
+    -- Ensure we're back to main screen after craft completes
+    if state.screen == "crafting" then
+        state.screen = "main"
+        gui.showMainScreen()
+    end
+end
 
 -- Event handlers
 local function handleTouch(x, y)
-    debug("handleTouch called with x=" .. x .. " y=" .. y)
     if state.crafting then
         gui.showMessage("Craft in progress...")
         return
@@ -253,11 +328,23 @@ local function handleTouch(x, y)
             return
         end
         
-        -- Show quantity selector
+        -- Show seed details
         state.currentSeed = seed
-        state.currentQuantity = 1
-        state.screen = "quantity"
-        gui.showQuantitySelector(seed, 1)
+        state.screen = "details"
+        gui.showSeedDetails(seed)
+        
+    elseif state.screen == "details" and result then
+        if result.type == "quantity" then
+            -- From details, go to quantity selector
+            state.currentQuantity = 1
+            state.screen = "quantity"
+            gui.showQuantitySelector(result.seed, 1)
+        elseif result.type == "back" then
+            -- Back to main
+            state.screen = "main"
+            state.currentSeed = nil
+            gui.showMainScreen()
+        end
         
     elseif state.screen == "quantity" then
         if result.type == "adjust" then
@@ -277,7 +364,7 @@ local function handleTouch(x, y)
             gui.showQuantitySelector(state.currentSeed, newQty)
             
         elseif result.type == "craft" then
-            -- Start crafting (call directly, no blocking)
+            -- Start crafting
             startCraft(state.currentSeed, state.currentQuantity)
             
         elseif result.type == "cancel" then
@@ -288,111 +375,6 @@ local function handleTouch(x, y)
             gui.showMainScreen()
         end
     end
-    debug("handleTouch returning")
-end
-
-startCraft = function(seed, quantity)
-    debug("startCraft called")
-    -- Check ingredients
-    local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
-    
-    if not canCraft then
-        gui.showError("Missing: " .. missing)
-        -- Remove sleep - use timer instead
-        os.startTimer(2)
-        state.screen = "main"
-        gui.showMainScreen()
-        return
-    end
-    
-    -- Start the craft
-    debug("Setting state.crafting = true")
-    state.crafting = true
-    state.currentSeed = seed  -- Store the seed in state!
-    state.currentQuantity = quantity  -- Store quantity too
-    state.craftStartTime = os.clock()
-    state.screen = "crafting"
-    state.timerDebugShown = false  -- Reset debug flag
-    
-    -- Begin altar crafting
-    print("Calling altar.startCraft...")
-    local success, err = pcall(altar.startCraft, seed, quantity)
-    if not success then
-        gui.showError("Craft failed: " .. tostring(err))
-        state.crafting = false
-        state.screen = "main"
-        gui.showMainScreen()
-        return
-    end
-    
-    -- Show initial progress
-    debug("Calling gui.showProgress")
-    gui.showProgress(seed, 0)
-    print("Craft started, monitoring progress...")
-    debug("Current updateTimer = " .. tostring(updateTimer))
-    
-    -- Ensure we have a timer running
-    if not updateTimer then
-        print("WARNING: No updateTimer! Starting one now...")
-        updateTimer = os.startTimer(0.5)
-    end
-    
-    print("Returning to event loop...")
-    debug("startCraft function ending")
-end
-
-local function updateCraftProgress()
-    debug("updateCraftProgress called, state.crafting=" .. tostring(state.crafting))
-    if not state.crafting then return end
-    
-    if not state.currentSeed then
-        print("ERROR: No current seed in state!")
-        return
-    end
-    
-    -- Use altar's progress calculation
-    local progress = altar.getProgress()
-    local elapsed = os.clock() - state.craftStartTime
-    
-    debug(string.format("Progress=%.2f, Elapsed=%.1fs", progress, elapsed))
-    
-    -- Debug: confirm timer is working
-    if elapsed < 1 then
-        print("Timer working - craft progress update called")
-    end
-    
-    -- Create a unique key for 5-second intervals to ensure printing
-    local fiveSecMark = math.floor(elapsed / 5)
-    if not state.lastProgressPrint or state.lastProgressPrint ~= fiveSecMark then
-        state.lastProgressPrint = fiveSecMark
-        print(string.format("[%.1fs] Progress: %.1f%% - %s", 
-            elapsed, 
-            progress * 100,
-            altar.getStatus()))
-    end
-    
-    -- Always update GUI
-    debug("Calling gui.showProgress with progress=" .. progress)
-    gui.showProgress(state.currentSeed, progress)
-    
-    -- Check if complete
-    if altar.checkComplete() then
-        state.crafting = false
-        gui.showMessage("Craft complete!")
-        state.lastProgressPrint = nil  -- Reset for next craft
-        -- Remove sleep to avoid blocking
-        state.screen = "main"
-        gui.showMainScreen()
-    elseif elapsed > ((state.currentSeed.time or 20) + 10) then
-        -- Timeout
-        state.crafting = false
-        gui.showError("Craft timeout!")
-        altar.cleanup()
-        state.lastProgressPrint = nil  -- Reset for next craft
-        -- Remove sleep to avoid blocking
-        state.screen = "main"
-        gui.showMainScreen()
-    end
 end
 
 -- Main event loop
@@ -400,93 +382,31 @@ local function main()
     -- Initial display
     gui.showMainScreen()
     
-    -- Start timer for updates
-    updateTimer = os.startTimer(0.5)
-    print("Initial timer started with ID: " .. tostring(updateTimer))
-    debug("Initial timer started with ID: " .. tostring(updateTimer))
-    
-    -- Force a timer restart to ensure it's running
-    if not updateTimer then
-        print("WARNING: Timer failed to start, retrying...")
-        updateTimer = os.startTimer(0.5)
-    end
-    
-    -- Debug counter
-    local eventCount = 0
+    -- Update timer for ingredient availability
+    local updateTimer = os.startTimer(1)
     
     while true do
-        -- Debug: show we're about to pull event
-        if state.crafting and eventCount % 10 == 0 then
-            debug("About to call os.pullEvent, eventCount=" .. eventCount .. " updateTimer=" .. tostring(updateTimer))
-        end
-        
         local event, p1, p2, p3 = os.pullEvent()
-        eventCount = eventCount + 1
-        
-        -- Debug: show ALL events when crafting
-        if state.crafting then
-            debug("Event #" .. eventCount .. ": " .. event .. " p1: " .. tostring(p1) .. " p2: " .. tostring(p2) .. " p3: " .. tostring(p3))
-        end
         
         if event == "monitor_touch" then
-            handleTouch(p2, p3) -- p2=x, p3=y
-            debug("monitor_touch handled, continuing loop")
+            handleTouch(p2, p3)
             
-        elseif event == "timer" then
-            -- Debug all timer events
-            if state.crafting then
-                debug("Timer event! ID: " .. tostring(p1) .. " Expected: " .. tostring(updateTimer))
-            end
-            
-            -- Instead of strict ID matching, just process any timer and restart
-            -- This handles cases where multiple timers might be queued
-            
-            -- Update craft progress if needed
-            updateCraftProgress()
-            
+        elseif event == "timer" and p1 == updateTimer then
             -- Update ingredient availability
             if state.screen == "main" and not state.crafting then
                 gui.updateAvailability()
             end
-            
-            -- Cancel the old timer if it exists and doesn't match
-            if updateTimer and p1 ~= updateTimer then
-                os.cancelTimer(updateTimer)
-                if state.crafting then
-                    debug("Cancelled old timer: " .. tostring(updateTimer))
-                end
-            end
-            
-            -- Always start a fresh timer
-            updateTimer = os.startTimer(0.5)
-            if state.crafting then
-                debug("Started fresh timer with ID: " .. updateTimer)
-            end
+            -- Restart timer
+            updateTimer = os.startTimer(1)
             
         elseif event == "key" and p1 == keys.q then
             -- Quit
             gui.showMessage("Shutting down...")
-            -- Don't use sleep in event loop
-            os.startTimer(1) -- Just start a timer, don't wait
+            sleep(1)
             term.clear()
             term.setCursorPos(1, 1)
             print("MysticalAgriculture Automation stopped.")
             break
-        elseif event == "key" then
-            -- Debug: show key events when crafting
-            if state.crafting then
-                debug("Key pressed: " .. tostring(p1))
-                -- Test: manually start a timer when pressing 't'
-                if p1 == keys.t then
-                    local testTimer = os.startTimer(1)
-                    debug("TEST: Started timer with ID: " .. tostring(testTimer))
-                end
-            end
-        else
-            -- Debug: show any unhandled events when crafting
-            if state.crafting then
-                debug("Unhandled event: " .. tostring(event) .. " p1: " .. tostring(p1))
-            end
         end
     end
 end

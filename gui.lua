@@ -1,5 +1,5 @@
--- GUI Module
--- Handles monitor display and touch input
+-- GUI Module - Rewritten
+-- Clean implementation with working progress bar
 
 local gui = {}
 local monitor = nil
@@ -7,8 +7,9 @@ local config = nil
 local me = nil
 local seeds = nil
 
--- Display dimensions
-local width, height = 0, 0
+-- Display dimensions - will be set during init
+local width = 0
+local height = 0
 
 -- GUI state
 local buttons = {}
@@ -16,6 +17,21 @@ local currentScreen = "main"
 local currentPage = 1
 local totalPages = 1
 local seedsPerPage = 1
+
+-- Color scheme
+local theme = {
+    background = colors.black,
+    header = colors.blue,
+    headerText = colors.white,
+    button = colors.gray,
+    buttonText = colors.white,
+    buttonActive = colors.lime,
+    progressBar = colors.gray,
+    progressFill = colors.lime,
+    error = colors.red,
+    success = colors.green,
+    info = colors.lightBlue
+}
 
 -- Initialize GUI
 function gui.init(cfg, meModule, seedsData)
@@ -31,128 +47,141 @@ function gui.init(cfg, meModule, seedsData)
     
     -- Set up monitor
     monitor.setTextScale(0.5)
-    monitor.setBackgroundColor(colors.black)
+    monitor.setBackgroundColor(theme.background)
     monitor.clear()
     
-    -- Get dimensions
+    -- Get dimensions ONCE during init
     width, height = monitor.getSize()
     
-    print("GUI initialized on " .. width .. "x" .. height .. " monitor")
+    -- Calculate seeds per page
+    seedsPerPage = math.floor((height - 6) / 3)
     
-    -- Debug to file
-    local f = fs.open("/debug-log.txt", "a")
-    if f then
-        f.writeLine(os.clock() .. ": GUI: Monitor size = " .. width .. "x" .. height)
-        f.close()
-    end
     return true
 end
 
 -- Clear screen
 local function clear()
-    monitor.setBackgroundColor(colors.black)
+    monitor.setBackgroundColor(theme.background)
     monitor.setTextColor(colors.white)
     monitor.clear()
     monitor.setCursorPos(1, 1)
 end
 
+-- Draw header
+local function drawHeader(title)
+    monitor.setBackgroundColor(theme.header)
+    monitor.setTextColor(theme.headerText)
+    monitor.setCursorPos(1, 1)
+    monitor.write(string.rep(" ", width))
+    monitor.setCursorPos(math.floor((width - #title) / 2), 1)
+    monitor.write(title)
+    monitor.setBackgroundColor(theme.background)
+end
+
 -- Draw a button
 local function drawButton(x, y, w, h, text, bgColor, textColor)
+    bgColor = bgColor or theme.button
+    textColor = textColor or theme.buttonText
+    
     monitor.setBackgroundColor(bgColor)
     monitor.setTextColor(textColor)
     
-    -- Fill button area
-    for dy = 0, h - 1 do
-        monitor.setCursorPos(x, y + dy)
+    for i = 0, h - 1 do
+        monitor.setCursorPos(x, y + i)
         monitor.write(string.rep(" ", w))
     end
     
     -- Center text
-    local textX = x + math.floor((w - #text) / 2)
     local textY = y + math.floor(h / 2)
+    local textX = x + math.floor((w - #text) / 2)
     monitor.setCursorPos(textX, textY)
     monitor.write(text)
     
-    -- Store button for click detection
-    table.insert(buttons, {
+    monitor.setBackgroundColor(theme.background)
+end
+
+-- Register a button
+local function addButton(id, x, y, w, h, data)
+    buttons[id] = {
         x = x,
         y = y,
         w = w,
         h = h,
-        text = text,
-        data = nil
-    })
-    
-    return #buttons -- Return button index
-end
-
--- Draw header
-local function drawHeader(title)
-    local headerColor = colors.blue
-    if config.settings and config.settings.colors and config.settings.colors.header then
-        headerColor = config.settings.colors.header
-    end
-    monitor.setBackgroundColor(headerColor)
-    monitor.setTextColor(colors.white)
-    monitor.setCursorPos(1, 1)
-    monitor.write(string.rep(" ", width))
-    
-    local titleX = math.floor((width - #title) / 2)
-    monitor.setCursorPos(titleX, 1)
-    monitor.write(title)
+        data = data
+    }
 end
 
 -- Show main screen with seed grid
-function gui.showMainScreen(page)
+function gui.showMainScreen()
     clear()
     buttons = {}
     currentScreen = "main"
-    currentPage = page or currentPage or 1
     
     drawHeader("MysticalAgriculture Automation")
     
-    -- Calculate grid layout
-    local buttonWidth = 8
+    -- Use order from seeds if available, otherwise build list
+    local seedList = {}
+    if seeds.order then
+        -- Use predefined order
+        for _, id in ipairs(seeds.order) do
+            if seeds[id] then
+                table.insert(seedList, {id = id, seed = seeds[id]})
+            end
+        end
+    else
+        -- Fallback to building list
+        for id, seed in pairs(seeds) do
+            if id ~= "order" then  -- Skip the order field itself
+                table.insert(seedList, {id = id, seed = seed})
+            end
+        end
+        -- Sort by name
+        table.sort(seedList, function(a, b)
+            local aName = a.seed.name or a.id
+            local bName = b.seed.name or b.id
+            return aName < bName
+        end)
+    end
+    
+    -- Grid layout calculations
+    local buttonWidth = 10
     local buttonHeight = 3
-    local spacing = 1
+    local spacing = 2
     local cols = math.floor((width - spacing) / (buttonWidth + spacing))
-    local rows = math.floor((height - 5) / (buttonHeight + spacing)) -- Leave room for navigation
+    local rows = math.floor((height - 8) / (buttonHeight + spacing))
+    seedsPerPage = cols * rows
     
     -- Calculate pagination
-    seedsPerPage = cols * rows
-    totalPages = math.ceil(#seeds.order / seedsPerPage)
-    currentPage = math.max(1, math.min(currentPage, totalPages))
+    totalPages = math.ceil(#seedList / seedsPerPage)
+    local startIdx = (currentPage - 1) * seedsPerPage + 1
+    local endIdx = math.min(currentPage * seedsPerPage, #seedList)
     
-    -- Calculate starting index for this page
-    local startIndex = (currentPage - 1) * seedsPerPage + 1
-    local endIndex = math.min(startIndex + seedsPerPage - 1, #seeds.order)
-    
-    -- Draw seed buttons
-    local seedIndex = startIndex
+    -- Draw seed grid
+    local seedIndex = startIdx
     local y = 3
     
     for row = 1, rows do
         local x = spacing
         
         for col = 1, cols do
-            if seedIndex > endIndex then break end
+            if seedIndex > endIdx then break end
             
-            local seedId = seeds.order[seedIndex]
-            if seedId then
-                local seed = seeds[seedId]
-                if seed then
-                    -- Check availability
-                    local canCraft = me.checkIngredients(seed.ingredients, 1)
-                    -- Use default colors if settings not present
-                    local bgColor = canCraft and colors.green or colors.red
-                    if config.settings and config.settings.colors then
-                        bgColor = canCraft and config.settings.colors.available or config.settings.colors.unavailable
-                    end
-                    
-                    -- Draw button
-                    local btnIndex = drawButton(x, y, buttonWidth, buttonHeight, seed.shortName or seed.name:sub(1, 6), bgColor, colors.white)
-                    buttons[btnIndex].data = {type = "seed", id = seedId}
-                end
+            local item = seedList[seedIndex]
+            if item then
+                local seed = item.seed
+                local canCraft, _ = me.checkIngredients(seed.ingredients, 1)
+                
+                -- Determine color (green if available, red if not)
+                local bgColor = canCraft and colors.green or colors.red
+                
+                -- Use short name or truncate regular name
+                local displayName = seed.shortName or seed.name:sub(1, 8)
+                
+                -- Draw button
+                drawButton(x, y, buttonWidth, buttonHeight, displayName, bgColor, colors.white)
+                
+                -- Register button
+                addButton("seed_" .. seedIndex, x, y, buttonWidth, buttonHeight, {type = "seed", id = item.id})
             end
             
             x = x + buttonWidth + spacing
@@ -164,31 +193,138 @@ function gui.showMainScreen(page)
     
     -- Navigation buttons
     local navY = height - 3
-    monitor.setBackgroundColor(colors.black)
     
-    -- Previous button
     if currentPage > 1 then
-        local btnIndex = drawButton(2, navY, 10, 2, "< Previous", colors.lightGray, colors.black)
-        buttons[btnIndex].data = {type = "nav", action = "prev"}
+        drawButton(spacing, navY, 15, 3, "< Previous", colors.blue, colors.white)
+        addButton("prev", spacing, navY, 15, 3, {type = "page", action = "prev"})
+    end
+    
+    if currentPage < totalPages then
+        drawButton(width - 15 - spacing, navY, 15, 3, "Next >", colors.blue, colors.white)
+        addButton("next", width - 15 - spacing, navY, 15, 3, {type = "page", action = "next"})
     end
     
     -- Page indicator
-    monitor.setCursorPos(math.floor(width/2) - 5, navY)
-    monitor.setTextColor(colors.white)
-    monitor.write("Page " .. currentPage .. "/" .. totalPages)
+    if totalPages > 1 then
+        local pageText = "Page " .. currentPage .. " of " .. totalPages
+        monitor.setCursorPos(math.floor((width - #pageText) / 2), navY + 1)
+        monitor.setTextColor(colors.white)
+        monitor.write(pageText)
+    end
+end
+
+-- Show seed details
+function gui.showSeedDetails(seed)
+    clear()
+    buttons = {}
+    currentScreen = "details"
     
-    -- Next button
-    if currentPage < totalPages then
-        local btnIndex = drawButton(width - 11, navY, 10, 2, "Next >", colors.lightGray, colors.black)
-        buttons[btnIndex].data = {type = "nav", action = "next"}
+    drawHeader(seed.name)
+    
+    -- Current stock section
+    local y = 3
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Current Stock:")
+    monitor.setTextColor(colors.white)
+    
+    local currentStock = me.getItemCount(seed.output or ("mysticalagriculture:" .. seed.id))
+    monitor.setCursorPos(4, y + 1)
+    monitor.write(currentStock .. " seeds in ME system")
+    
+    -- Separator line
+    y = y + 3
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.gray)
+    monitor.write(string.rep("-", width - 4))
+    
+    -- Ingredients section
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Ingredients Required (per seed):")
+    y = y + 2
+    
+    -- Check what we have vs what we need
+    local canCraft = true
+    local maxCraftable = 999999  -- Start with a high number
+    
+    for _, ingredient in ipairs(seed.ingredients) do
+        local have = me.getItemCount(ingredient.name)
+        local need = ingredient.count
+        local craftable = math.floor(have / need)
+        
+        -- Track minimum craftable
+        if craftable < maxCraftable then
+            maxCraftable = craftable
+        end
+        
+        -- Determine color based on availability
+        local textColor = colors.white
+        local statusSymbol = " "
+        if have >= need then
+            textColor = colors.lime
+            statusSymbol = "+"
+        else
+            textColor = colors.red
+            statusSymbol = "-"
+            canCraft = false
+        end
+        
+        -- Display ingredient info with better formatting
+        monitor.setCursorPos(4, y)
+        monitor.setTextColor(textColor)
+        monitor.write(statusSymbol .. " ")
+        
+        -- Extract readable name
+        local displayName = ingredient.displayName or ingredient.name:match("([^:]+)$") or ingredient.name
+        -- Capitalize first letter
+        displayName = displayName:sub(1,1):upper() .. displayName:sub(2)
+        displayName = displayName:gsub("_", " ")
+        
+        monitor.write(displayName)
+        
+        -- Right-align the numbers
+        local numbers = string.format("%d / %d", have, need)
+        local xPos = width - #numbers - 2
+        monitor.setCursorPos(xPos, y)
+        monitor.write(numbers)
+        
+        y = y + 1
     end
     
-    -- Status bar
-    monitor.setCursorPos(1, height)
-    monitor.setBackgroundColor(colors.gray)
-    monitor.write(string.rep(" ", width))
-    monitor.setCursorPos(2, height)
-    monitor.write("Touch a seed to craft | Press Q on computer to quit")
+    -- Max craftable section
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Maximum Craftable: ")
+    monitor.setTextColor(canCraft and colors.lime or colors.red)
+    monitor.write(maxCraftable .. " seeds")
+    
+    -- Craft time
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Craft Time: ")
+    monitor.setTextColor(colors.white)
+    monitor.write("~5-7 seconds per seed")
+    
+    -- Buttons at bottom of screen
+    local buttonY = height - 4
+    local buttonWidth = 12
+    local buttonHeight = 3
+    
+    -- Back button (bottom left)
+    drawButton(2, buttonY, buttonWidth, buttonHeight, "Back", colors.gray, colors.white)
+    addButton("back", 2, buttonY, buttonWidth, buttonHeight, {type = "back"})
+    
+    -- Craft button (bottom right)
+    if canCraft then
+        drawButton(width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, "Craft", colors.green, colors.white)
+        addButton("craft", width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, {type = "craft", seed = seed})
+    else
+        drawButton(width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, "Can't Craft", colors.red, colors.white)
+    end
 end
 
 -- Show quantity selector
@@ -197,197 +333,166 @@ function gui.showQuantitySelector(seed, quantity)
     buttons = {}
     currentScreen = "quantity"
     
-    drawHeader(seed.name)
+    drawHeader("Select Quantity: " .. seed.name)
     
-    -- Check max craftable
-    local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
-    local maxCraftable = 64
-    
-    if not canCraft then
-        -- Calculate max we can make
-        for i = quantity, 1, -1 do
-            if me.checkIngredients(seed.ingredients, i) then
-                maxCraftable = i
-                break
-            end
-        end
-    end
-    
-    -- Display ingredients needed
-    local y = 3
-    monitor.setCursorPos(2, y)
-    monitor.write("Ingredients for " .. quantity .. " seed" .. (quantity > 1 and "s:" or ":"))
-    
-    y = y + 2
-    for _, ing in ipairs(seed.ingredients) do
-        monitor.setCursorPos(4, y)
-        local displayName = me.getItemDisplayName(ing.name)
-        local needed = ing.count * quantity
-        local available = me.getItemCount(ing.name)
-        
-        monitor.setTextColor(available >= needed and colors.lime or colors.red)
-        monitor.write(string.format("%dx %s (have %d)", needed, displayName, available))
-        y = y + 1
-    end
-    
-    -- Quantity controls
-    y = y + 2
+    -- Quantity display
+    local qtyText = "Quantity: " .. quantity
+    monitor.setCursorPos(math.floor((width - #qtyText) / 2), 8)
     monitor.setTextColor(colors.white)
-    monitor.setCursorPos(2, y)
-    monitor.write("Quantity: " .. quantity .. " (max: " .. maxCraftable .. ")")
+    monitor.write(qtyText)
     
     -- Adjustment buttons
-    y = y + 2
-    local btnX = 2
+    local btnY = 12
+    drawButton(10, btnY, 8, 3, "-5", theme.button)
+    addButton("minus5", 10, btnY, 8, 3, {type = "adjust", action = "-5"})
     
-    local btn = drawButton(btnX, y, 4, 3, "-5", colors.red, colors.white)
-    buttons[btn].data = {type = "adjust", action = "-5"}
-    btnX = btnX + 5
+    drawButton(20, btnY, 8, 3, "-1", theme.button)
+    addButton("minus1", 20, btnY, 8, 3, {type = "adjust", action = "-1"})
     
-    btn = drawButton(btnX, y, 4, 3, "-1", colors.orange, colors.white)
-    buttons[btn].data = {type = "adjust", action = "-1"}
-    btnX = btnX + 5
+    drawButton(width - 28, btnY, 8, 3, "+1", theme.button)
+    addButton("plus1", width - 28, btnY, 8, 3, {type = "adjust", action = "+1"})
     
-    btn = drawButton(btnX, y, 4, 3, "+1", colors.green, colors.white)
-    buttons[btn].data = {type = "adjust", action = "+1"}
-    btnX = btnX + 5
+    drawButton(width - 18, btnY, 8, 3, "+5", theme.button)
+    addButton("plus5", width - 18, btnY, 8, 3, {type = "adjust", action = "+5"})
     
-    btn = drawButton(btnX, y, 4, 3, "+5", colors.lime, colors.white)
-    buttons[btn].data = {type = "adjust", action = "+5"}
+    -- Craft and Cancel buttons
+    drawButton(math.floor(width/2) - 20, 20, 18, 3, "Craft", theme.buttonActive)
+    addButton("craft", math.floor(width/2) - 20, 20, 18, 3, {type = "craft"})
     
-    -- Craft/Cancel buttons
-    y = y + 4
-    btn = drawButton(2, y, 12, 3, "CRAFT", canCraft and colors.green or colors.gray, colors.white)
-    buttons[btn].data = {type = "craft"}
-    
-    btn = drawButton(16, y, 12, 3, "CANCEL", colors.red, colors.white)
-    buttons[btn].data = {type = "cancel"}
+    drawButton(math.floor(width/2) + 2, 20, 18, 3, "Cancel", theme.button)
+    addButton("cancel", math.floor(width/2) + 2, 20, 18, 3, {type = "cancel"})
 end
 
--- Show progress bar
-function gui.showProgress(seed, progress)
-    -- Write to debug log
-    local f = fs.open("/debug-log.txt", "a")
-    if f then
-        f.writeLine(os.clock() .. ": GUI: showProgress called with progress=" .. tostring(progress))
-        if not monitor then
-            f.writeLine(os.clock() .. ": ERROR: Monitor is nil!")
-            f.close()
-            return
-        end
-        f.close()
-    end
-    
+-- Show progress bar with working implementation
+function gui.showProgress(seed, progress, status)
     clear()
     buttons = {}
     currentScreen = "crafting"
     
     drawHeader("Crafting: " .. seed.name)
     
-    -- Check if dimensions are valid BEFORE using them
-    if width == 0 or height == 0 then
-        -- Debug log
-        local f = fs.open("/debug-log.txt", "a")
-        if f then
-            f.writeLine(os.clock() .. ": ERROR: Monitor dimensions not set! Getting size now...")
-            f.close()
-        end
-        width, height = monitor.getSize()
-    end
-    
-    -- Progress bar - calculate AFTER ensuring dimensions are valid
-    local barY = math.floor(height / 2) - 1
-    local barWidth = width - 4
-    local filled = math.floor(barWidth * progress)
-    
-    -- Debug log
-    f = fs.open("/debug-log.txt", "a")
-    if f then
-        f.writeLine(string.format(os.clock() .. ": GUI: width=%d, height=%d, barWidth=%d, filled=%d", width, height, barWidth, filled))
-        f.close()
-    end
-    
-    monitor.setCursorPos(2, barY)
-    monitor.setBackgroundColor(colors.gray)
-    monitor.write(string.rep(" ", barWidth))
-    
-    monitor.setCursorPos(2, barY)
-    monitor.setBackgroundColor(colors.lime)
-    monitor.write(string.rep(" ", filled))
-    
-    -- Debug log final
-    f = fs.open("/debug-log.txt", "a")
-    if f then
-        f.writeLine(string.format(os.clock() .. ": GUI: Progress bar drawn - filled=%d of %d pixels", filled, barWidth))
-        f.close()
-    end
-    
-    -- Progress text
-    monitor.setBackgroundColor(colors.black)
+    -- Status text
+    monitor.setCursorPos(2, 4)
     monitor.setTextColor(colors.white)
-    monitor.setCursorPos(2, barY + 2)
-    monitor.write(string.format("Progress: %d%%", math.floor(progress * 100)))
+    monitor.write(status or "Crafting...")
     
-    -- Time remaining
-    if seed.time then
-        local remaining = math.ceil(seed.time * (1 - progress))
-        monitor.setCursorPos(2, barY + 3)
-        monitor.write("Time remaining: " .. remaining .. "s")
+    -- Calculate progress bar position and size
+    local barY = math.floor(height / 2)
+    local barX = 4
+    local barWidth = width - 8
+    local barHeight = 3
+    
+    -- Draw progress bar background
+    monitor.setBackgroundColor(theme.progressBar)
+    for i = 0, barHeight - 1 do
+        monitor.setCursorPos(barX, barY + i)
+        monitor.write(string.rep(" ", barWidth))
     end
+    
+    -- Draw progress bar fill
+    local fillWidth = math.floor(barWidth * progress)
+    if fillWidth > 0 then
+        monitor.setBackgroundColor(theme.progressFill)
+        for i = 0, barHeight - 1 do
+            monitor.setCursorPos(barX, barY + i)
+            monitor.write(string.rep(" ", fillWidth))
+        end
+    end
+    
+    -- Draw percentage text
+    monitor.setBackgroundColor(theme.background)
+    monitor.setTextColor(colors.white)
+    local percentText = math.floor(progress * 100) .. "%"
+    monitor.setCursorPos(math.floor((width - #percentText) / 2), barY + barHeight + 2)
+    monitor.write(percentText)
+    
+    -- Draw border around progress bar
+    monitor.setTextColor(colors.gray)
+    -- Top border
+    monitor.setCursorPos(barX - 1, barY - 1)
+    monitor.write("+" .. string.rep("-", barWidth) .. "+")
+    -- Side borders
+    for i = 0, barHeight - 1 do
+        monitor.setCursorPos(barX - 1, barY + i)
+        monitor.write("|")
+        monitor.setCursorPos(barX + barWidth, barY + i)
+        monitor.write("|")
+    end
+    -- Bottom border
+    monitor.setCursorPos(barX - 1, barY + barHeight)
+    monitor.write("+" .. string.rep("-", barWidth) .. "+")
+    
+    monitor.setBackgroundColor(theme.background)
 end
 
--- Show error message
-function gui.showError(message)
-    monitor.setBackgroundColor(colors.black)
-    monitor.setTextColor(colors.red)
+-- Show message
+function gui.showMessage(msg)
+    -- Save current cursor position
+    local oldBg = monitor.getBackgroundColor()
+    local oldText = monitor.getTextColor()
     
-    local y = height - 2
-    monitor.setCursorPos(1, y)
-    monitor.write(string.rep(" ", width))
-    monitor.setCursorPos(2, y)
-    monitor.write("Error: " .. message)
+    -- Show message at bottom
+    monitor.setCursorPos(2, height)
+    monitor.setBackgroundColor(theme.background)
+    monitor.setTextColor(theme.info)
+    monitor.clearLine()
+    monitor.write(msg)
+    
+    -- Restore colors
+    monitor.setBackgroundColor(oldBg)
+    monitor.setTextColor(oldText)
 end
 
--- Show info message
-function gui.showMessage(message)
-    monitor.setBackgroundColor(colors.black)
-    monitor.setTextColor(colors.yellow)
+-- Show error
+function gui.showError(msg)
+    -- Save current cursor position
+    local oldBg = monitor.getBackgroundColor()
+    local oldText = monitor.getTextColor()
     
-    local y = height - 2
-    monitor.setCursorPos(1, y)
-    monitor.write(string.rep(" ", width))
-    monitor.setCursorPos(2, y)
-    monitor.write(message)
+    -- Show error at bottom
+    monitor.setCursorPos(2, height)
+    monitor.setBackgroundColor(theme.background)
+    monitor.setTextColor(theme.error)
+    monitor.clearLine()
+    monitor.write("ERROR: " .. msg)
+    
+    -- Restore colors
+    monitor.setBackgroundColor(oldBg)
+    monitor.setTextColor(oldText)
 end
 
 -- Handle touch events
 function gui.handleTouch(x, y, screen)
-    -- Find which button was pressed
-    for i, btn in ipairs(buttons) do
+    for id, btn in pairs(buttons) do
         if x >= btn.x and x < btn.x + btn.w and
            y >= btn.y and y < btn.y + btn.h then
-            -- Handle navigation buttons
-            if btn.data and btn.data.type == "nav" then
+            -- Button clicked
+            if btn.data.type == "page" then
                 if btn.data.action == "prev" then
-                    gui.showMainScreen(currentPage - 1)
+                    currentPage = math.max(1, currentPage - 1)
                 elseif btn.data.action == "next" then
-                    gui.showMainScreen(currentPage + 1)
+                    currentPage = math.min(totalPages, currentPage + 1)
                 end
-                return nil -- Don't return navigation as action
+                gui.showMainScreen()
+            elseif btn.data.type == "back" then
+                -- Return the back action to the main handler
+                return btn.data
+            elseif btn.data.type == "craft" and screen == "details" then
+                -- From details screen, go to quantity selector
+                return {type = "quantity", seed = btn.data.seed}
+            else
+                return btn.data
             end
-            return btn.data
         end
     end
-    
     return nil
 end
 
--- Update availability colors on main screen
+-- Update availability (refresh main screen if needed)
 function gui.updateAvailability()
-    if currentScreen ~= "main" then return end
-    
-    -- Just redraw the main screen to update colors
-    gui.showMainScreen(currentPage)
+    if currentScreen == "main" then
+        gui.showMainScreen()
+    end
 end
 
 return gui
