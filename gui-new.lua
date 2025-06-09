@@ -150,7 +150,7 @@ function gui.showMainScreen()
     for i = startIdx, endIdx do
         local item = seedList[i]
         local seed = item.seed
-        local canCraft = me.hasIngredients(seed.ingredients)
+        local canCraft, _ = me.checkIngredients(seed.ingredients, 1)
         
         -- Determine color
         local bgColor = canCraft and theme.buttonActive or theme.button
