@@ -169,13 +169,10 @@ function altar.startSingleCraft(seed)
         end
     end
     
-    -- Wait for items to settle before craft starts
-    print("Waiting for items to settle...")
-    sleep(0.5) -- Let items settle
-    
     -- Altar should start automatically with redstone block
     craftState.craftStartTime = os.clock()
     print("Items placed, altar should start crafting")
+    -- Note: Removed sleep to avoid blocking event loop
 end
 
 -- Check if current craft is complete

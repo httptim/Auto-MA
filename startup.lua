@@ -260,7 +260,7 @@ local function handleTouch(x, y)
             gui.showQuantitySelector(state.currentSeed, newQty)
             
         elseif result.type == "craft" then
-            -- Start crafting
+            -- Start crafting (call directly, no blocking)
             startCraft(state.currentSeed, state.currentQuantity)
             
         elseif result.type == "cancel" then
@@ -291,6 +291,7 @@ function startCraft(seed, quantity)
     state.currentQuantity = quantity  -- Store quantity too
     state.craftStartTime = os.clock()
     state.screen = "crafting"
+    state.timerDebugShown = false  -- Reset debug flag
     
     -- Begin altar crafting
     local success, err = pcall(altar.startCraft, seed, quantity)
@@ -335,7 +336,7 @@ local function updateCraftProgress()
     if altar.checkComplete() then
         state.crafting = false
         gui.showMessage("Craft complete!")
-        sleep(1)
+        -- Remove sleep to avoid blocking
         state.screen = "main"
         gui.showMainScreen()
     elseif elapsed > ((state.currentSeed.time or 20) + 10) then
@@ -343,7 +344,7 @@ local function updateCraftProgress()
         state.crafting = false
         gui.showError("Craft timeout!")
         altar.cleanup()
-        sleep(2)
+        -- Remove sleep to avoid blocking
         state.screen = "main"
         gui.showMainScreen()
     end
@@ -364,6 +365,12 @@ local function main()
             handleTouch(p2, p3) -- p2=x, p3=y
             
         elseif event == "timer" and p1 == updateTimer then
+            -- Debug timer
+            if state.crafting and not state.timerDebugShown then
+                print("Timer event received - updates working!")
+                state.timerDebugShown = true
+            end
+            
             -- Update craft progress if needed
             updateCraftProgress()
             
