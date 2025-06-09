@@ -284,27 +284,28 @@ function gui.showProgress(seed, progress)
     
     drawHeader("Crafting: " .. seed.name)
     
-    -- Progress bar
+    -- Check if dimensions are valid BEFORE using them
+    if width == 0 or height == 0 then
+        -- Debug log
+        local f = fs.open("/debug-log.txt", "a")
+        if f then
+            f.writeLine(os.clock() .. ": ERROR: Monitor dimensions not set! Getting size now...")
+            f.close()
+        end
+        width, height = monitor.getSize()
+    end
+    
+    -- Progress bar - calculate AFTER ensuring dimensions are valid
     local barY = math.floor(height / 2) - 1
     local barWidth = width - 4
+    local filled = math.floor(barWidth * progress)
     
     -- Debug log
     f = fs.open("/debug-log.txt", "a")
     if f then
-        f.writeLine(string.format(os.clock() .. ": GUI: width=%d, height=%d, barWidth=%d", width, height, barWidth))
-        
-        -- Check if dimensions are valid
-        if width == 0 or height == 0 then
-            f.writeLine(os.clock() .. ": ERROR: Monitor dimensions not set! Getting size now...")
-            width, height = monitor.getSize()
-            barWidth = width - 4
-            f.writeLine(os.clock() .. ": GUI: New dimensions - width=" .. width .. ", height=" .. height)
-        end
-        
+        f.writeLine(string.format(os.clock() .. ": GUI: width=%d, height=%d, barWidth=%d, filled=%d", width, height, barWidth, filled))
         f.close()
     end
-    
-    local filled = math.floor(barWidth * progress)
     
     monitor.setCursorPos(2, barY)
     monitor.setBackgroundColor(colors.gray)
