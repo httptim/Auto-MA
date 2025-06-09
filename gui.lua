@@ -13,6 +13,9 @@ local width, height = 0, 0
 -- GUI state
 local buttons = {}
 local currentScreen = "main"
+local currentPage = 1
+local totalPages = 1
+local seedsPerPage = 1
 
 -- Initialize GUI
 function gui.init(cfg, meModule, seedsData)
@@ -93,10 +96,11 @@ local function drawHeader(title)
 end
 
 -- Show main screen with seed grid
-function gui.showMainScreen()
+function gui.showMainScreen(page)
     clear()
     buttons = {}
     currentScreen = "main"
+    currentPage = page or currentPage or 1
     
     drawHeader("MysticalAgriculture Automation")
     
@@ -105,32 +109,43 @@ function gui.showMainScreen()
     local buttonHeight = 3
     local spacing = 1
     local cols = math.floor((width - spacing) / (buttonWidth + spacing))
-    local rows = math.floor((height - 3) / (buttonHeight + spacing))
+    local rows = math.floor((height - 5) / (buttonHeight + spacing)) -- Leave room for navigation
+    
+    -- Calculate pagination
+    seedsPerPage = cols * rows
+    totalPages = math.ceil(#seeds.order / seedsPerPage)
+    currentPage = math.max(1, math.min(currentPage, totalPages))
+    
+    -- Calculate starting index for this page
+    local startIndex = (currentPage - 1) * seedsPerPage + 1
+    local endIndex = math.min(startIndex + seedsPerPage - 1, #seeds.order)
     
     -- Draw seed buttons
-    local seedIndex = 1
+    local seedIndex = startIndex
     local y = 3
     
     for row = 1, rows do
         local x = spacing
         
         for col = 1, cols do
-            local seedId = seeds.order[seedIndex]
-            if not seedId then break end
+            if seedIndex > endIndex then break end
             
-            local seed = seeds[seedId]
-            if seed then
-                -- Check availability
-                local canCraft = me.checkIngredients(seed.ingredients, 1)
-                -- Use default colors if settings not present
-                local bgColor = canCraft and colors.green or colors.red
-                if config.settings and config.settings.colors then
-                    bgColor = canCraft and config.settings.colors.available or config.settings.colors.unavailable
+            local seedId = seeds.order[seedIndex]
+            if seedId then
+                local seed = seeds[seedId]
+                if seed then
+                    -- Check availability
+                    local canCraft = me.checkIngredients(seed.ingredients, 1)
+                    -- Use default colors if settings not present
+                    local bgColor = canCraft and colors.green or colors.red
+                    if config.settings and config.settings.colors then
+                        bgColor = canCraft and config.settings.colors.available or config.settings.colors.unavailable
+                    end
+                    
+                    -- Draw button
+                    local btnIndex = drawButton(x, y, buttonWidth, buttonHeight, seed.shortName or seed.name:sub(1, 6), bgColor, colors.white)
+                    buttons[btnIndex].data = {type = "seed", id = seedId}
                 end
-                
-                -- Draw button
-                local btnIndex = drawButton(x, y, buttonWidth, buttonHeight, seed.shortName or seed.name:sub(1, 6), bgColor, colors.white)
-                buttons[btnIndex].data = {type = "seed", id = seedId}
             end
             
             x = x + buttonWidth + spacing
@@ -138,7 +153,27 @@ function gui.showMainScreen()
         end
         
         y = y + buttonHeight + spacing
-        if seedIndex > #seeds.order then break end
+    end
+    
+    -- Navigation buttons
+    local navY = height - 3
+    monitor.setBackgroundColor(colors.black)
+    
+    -- Previous button
+    if currentPage > 1 then
+        local btnIndex = drawButton(2, navY, 10, 2, "< Previous", colors.lightGray, colors.black)
+        buttons[btnIndex].data = {type = "nav", action = "prev"}
+    end
+    
+    -- Page indicator
+    monitor.setCursorPos(math.floor(width/2) - 5, navY)
+    monitor.setTextColor(colors.white)
+    monitor.write("Page " .. currentPage .. "/" .. totalPages)
+    
+    -- Next button
+    if currentPage < totalPages then
+        local btnIndex = drawButton(width - 11, navY, 10, 2, "Next >", colors.lightGray, colors.black)
+        buttons[btnIndex].data = {type = "nav", action = "next"}
     end
     
     -- Status bar
@@ -287,6 +322,15 @@ function gui.handleTouch(x, y, screen)
     for i, btn in ipairs(buttons) do
         if x >= btn.x and x < btn.x + btn.w and
            y >= btn.y and y < btn.y + btn.h then
+            -- Handle navigation buttons
+            if btn.data and btn.data.type == "nav" then
+                if btn.data.action == "prev" then
+                    gui.showMainScreen(currentPage - 1)
+                elseif btn.data.action == "next" then
+                    gui.showMainScreen(currentPage + 1)
+                end
+                return nil -- Don't return navigation as action
+            end
             return btn.data
         end
     end
@@ -299,7 +343,7 @@ function gui.updateAvailability()
     if currentScreen ~= "main" then return end
     
     -- Just redraw the main screen to update colors
-    gui.showMainScreen()
+    gui.showMainScreen(currentPage)
 end
 
 return gui
