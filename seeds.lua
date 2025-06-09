@@ -54,7 +54,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "immersiveengineering:ingot_aluminum", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -67,7 +67,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "thermal:apatite", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -80,7 +80,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:basalt", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -93,7 +93,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "ae2:certus_quartz_crystal", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -106,7 +106,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:coal", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -119,7 +119,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:copper_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -132,7 +132,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:tube_coral", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -145,7 +145,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:diamond", count = 4},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -158,7 +158,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:dirt", count = 4},
-            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     },
@@ -172,7 +172,7 @@ local seeds = {
         ingredients = {
             {name = "minecraft:dragon_head", count = 1},
             {name = "minecraft:dragon_breath", count = 3},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -188,7 +188,7 @@ local seeds = {
             {name = "minecraft:yellow_dye", count = 1},
             {name = "minecraft:blue_dye", count = 1},
             {name = "minecraft:green_dye", count = 1},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -201,7 +201,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:emerald", count = 4},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -214,7 +214,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:end_stone", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -227,7 +227,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:experience_bottle", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -240,7 +240,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "ae2:fluix_crystal", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -253,7 +253,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "mekanism:fluorite_gem", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -266,7 +266,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:glowstone_dust", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -279,7 +279,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:gold_ingot", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -292,7 +292,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:ice", count = 4},
-            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     },
@@ -305,7 +305,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:iron_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -318,7 +318,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:lapis_lazuli", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -331,7 +331,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "thermal:lead_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -344,7 +344,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "quark:limestone", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -357,7 +357,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "quark:marble", count = 4},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -373,7 +373,7 @@ local seeds = {
             {name = "botania:yellow_mystical_flower", count = 1},
             {name = "botania:blue_mystical_flower", count = 1},
             {name = "botania:white_mystical_flower", count = 1},
-            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:prudentium_essence", count = 4}
         }
     },
@@ -386,7 +386,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:nether_star", count = 1},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 6}
         }
     },
@@ -399,7 +399,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:netherite_ingot", count = 4},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -412,7 +412,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "thermal:nickel_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -425,7 +425,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "powah:crystal_nitro", count = 4},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -438,7 +438,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:obsidian", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -451,7 +451,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "mekanism:ingot_osmium", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -464,7 +464,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:quartz", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -477,7 +477,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:redstone", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -490,7 +490,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "thermal:silver_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -503,7 +503,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:stone", count = 4},
-            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     },
@@ -516,7 +516,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "thermal:tin_ingot", count = 4},
-            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
@@ -529,7 +529,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "mekanism:ingot_uranium", count = 4},
-            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
@@ -542,7 +542,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:water_bucket", count = 4},
-            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     },
@@ -556,7 +556,7 @@ local seeds = {
         ingredients = {
             {name = "minecraft:wither_skeleton_skull", count = 1},
             {name = "mysticalagriculture:soul_dust", count = 3},
-            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
@@ -569,7 +569,7 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:oak_log", count = 4},
-            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
             {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     }
