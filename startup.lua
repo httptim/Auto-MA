@@ -279,7 +279,8 @@ function startCraft(seed, quantity)
     
     if not canCraft then
         gui.showError("Missing: " .. missing)
-        sleep(2)
+        -- Remove sleep - use timer instead
+        os.startTimer(2)
         state.screen = "main"
         gui.showMainScreen()
         return
@@ -357,46 +358,85 @@ local function main()
     -- Initial display
     gui.showMainScreen()
     
+    -- Timer variable needs to be outside the loop to persist
+    local updateTimer = nil
+    
     -- Start timer for updates
-    local updateTimer = os.startTimer(0.5)
+    updateTimer = os.startTimer(0.5)
+    print("Initial timer started with ID: " .. tostring(updateTimer))
+    
+    -- Debug counter
+    local eventCount = 0
     
     while true do
-        local event, p1, p2, p3 = os.pullEvent()
+        -- Debug: show we're about to pull event
+        if state.crafting and eventCount < 5 then
+            print("About to pull event...")
+        end
         
-        -- Debug: show all events when crafting
-        if state.crafting and event ~= "timer" then
-            print("Event: " .. event)
+        local event, p1, p2, p3 = os.pullEvent()
+        eventCount = eventCount + 1
+        
+        -- Debug: show ALL events when crafting
+        if state.crafting then
+            print("Event #" .. eventCount .. ": " .. event .. " p1: " .. tostring(p1) .. " p2: " .. tostring(p2) .. " p3: " .. tostring(p3))
         end
         
         if event == "monitor_touch" then
             handleTouch(p2, p3) -- p2=x, p3=y
             
-        elseif event == "timer" and p1 == updateTimer then
-            -- Debug timer
-            if state.crafting and not state.timerDebugShown then
-                print("Timer event received - updates working!")
-                state.timerDebugShown = true
+        elseif event == "timer" then
+            -- Debug all timer events
+            if state.crafting then
+                print("Timer event! ID: " .. tostring(p1) .. " Expected: " .. tostring(updateTimer))
             end
             
-            -- Update craft progress if needed
-            updateCraftProgress()
-            
-            -- Update ingredient availability
-            if state.screen == "main" and not state.crafting then
-                gui.updateAvailability()
+            if p1 == updateTimer then
+                -- Debug timer
+                if state.crafting and not state.timerDebugShown then
+                    print("Timer event received - updates working!")
+                    state.timerDebugShown = true
+                end
+                
+                -- Update craft progress if needed
+                updateCraftProgress()
+                
+                -- Update ingredient availability
+                if state.screen == "main" and not state.crafting then
+                    gui.updateAvailability()
+                end
+                
+                -- Restart timer
+                updateTimer = os.startTimer(0.5)
+                if state.crafting then
+                    print("New timer started with ID: " .. updateTimer)
+                end
             end
-            
-            -- Restart timer
-            updateTimer = os.startTimer(0.5)
             
         elseif event == "key" and p1 == keys.q then
             -- Quit
             gui.showMessage("Shutting down...")
-            sleep(1)
+            -- Don't use sleep in event loop
+            os.startTimer(1) -- Just start a timer, don't wait
             term.clear()
             term.setCursorPos(1, 1)
             print("MysticalAgriculture Automation stopped.")
             break
+        elseif event == "key" then
+            -- Debug: show key events when crafting
+            if state.crafting then
+                print("Key pressed: " .. tostring(p1))
+                -- Test: manually start a timer when pressing 't'
+                if p1 == keys.t then
+                    local testTimer = os.startTimer(1)
+                    print("TEST: Started timer with ID: " .. tostring(testTimer))
+                end
+            end
+        else
+            -- Debug: show any unhandled events when crafting
+            if state.crafting then
+                print("Unhandled event: " .. tostring(event) .. " p1: " .. tostring(p1))
+            end
         end
     end
 end

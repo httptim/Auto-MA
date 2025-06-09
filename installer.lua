@@ -22,6 +22,7 @@ local FILES = {
     {url = "me-bridge-docs.lua", path = INSTALL_DIR .. "/me-bridge-docs.lua"},
     {url = "altar-debug.lua", path = INSTALL_DIR .. "/altar-debug.lua"},
     {url = "altar-craft-test.lua", path = INSTALL_DIR .. "/altar-craft-test.lua"},
+    {url = "timer-test.lua", path = INSTALL_DIR .. "/timer-test.lua"},
     
     -- Documentation
     {url = "README.md", path = INSTALL_DIR .. "/README.md"},
