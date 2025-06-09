@@ -156,12 +156,16 @@ function gui.showMainScreen()
     local startIdx = (currentPage - 1) * seedsPerPage + 1
     local endIdx = math.min(currentPage * seedsPerPage, #seedList)
     
+    -- Calculate centered grid position
+    local totalGridWidth = (cols * buttonWidth) + ((cols - 1) * spacing)
+    local startX = math.floor((width - totalGridWidth) / 2)
+    
     -- Draw seed grid
     local seedIndex = startIdx
     local y = 3
     
     for row = 1, rows do
-        local x = spacing
+        local x = startX
         
         for col = 1, cols do
             if seedIndex > endIdx then break end
