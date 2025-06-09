@@ -219,6 +219,12 @@ local state = {
     screen = "main" -- main, quantity, crafting
 }
 
+-- Timer variable at module level so it's accessible everywhere
+local updateTimer = nil
+
+-- Forward declare startCraft
+local startCraft
+
 -- Event handlers
 local function handleTouch(x, y)
     print("DEBUG: handleTouch called with x=" .. x .. " y=" .. y)
@@ -275,7 +281,7 @@ local function handleTouch(x, y)
     print("DEBUG: handleTouch returning")
 end
 
-function startCraft(seed, quantity)
+startCraft = function(seed, quantity)
     print("DEBUG: startCraft called")
     -- Check ingredients
     local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
@@ -314,6 +320,13 @@ function startCraft(seed, quantity)
     gui.showProgress(seed, 0)
     print("Craft started, monitoring progress...")
     print("DEBUG: Current updateTimer = " .. tostring(updateTimer))
+    
+    -- Ensure we have a timer running
+    if not updateTimer then
+        print("WARNING: No updateTimer! Starting one now...")
+        updateTimer = os.startTimer(0.5)
+    end
+    
     print("Returning to event loop...")
     print("DEBUG: startCraft function ending")
 end
@@ -335,17 +348,24 @@ local function updateCraftProgress()
         print("Timer working - craft progress update called")
     end
     
-    -- Debug output every 5 seconds
-    if math.floor(elapsed) % 5 == 0 then
-        print(string.format("Progress: %.1f%% (%.1fs elapsed)", progress * 100, elapsed))
+    -- Create a unique key for 5-second intervals to ensure printing
+    local fiveSecMark = math.floor(elapsed / 5)
+    if not state.lastProgressPrint or state.lastProgressPrint ~= fiveSecMark then
+        state.lastProgressPrint = fiveSecMark
+        print(string.format("[%.1fs] Progress: %.1f%% - %s", 
+            elapsed, 
+            progress * 100,
+            altar.getStatus()))
     end
     
+    -- Always update GUI
     gui.showProgress(state.currentSeed, progress)
     
     -- Check if complete
     if altar.checkComplete() then
         state.crafting = false
         gui.showMessage("Craft complete!")
+        state.lastProgressPrint = nil  -- Reset for next craft
         -- Remove sleep to avoid blocking
         state.screen = "main"
         gui.showMainScreen()
@@ -354,14 +374,12 @@ local function updateCraftProgress()
         state.crafting = false
         gui.showError("Craft timeout!")
         altar.cleanup()
+        state.lastProgressPrint = nil  -- Reset for next craft
         -- Remove sleep to avoid blocking
         state.screen = "main"
         gui.showMainScreen()
     end
 end
-
--- Timer variable at module level so it's accessible everywhere
-local updateTimer = nil
 
 -- Main event loop
 local function main()
@@ -372,12 +390,18 @@ local function main()
     updateTimer = os.startTimer(0.5)
     print("Initial timer started with ID: " .. tostring(updateTimer))
     
+    -- Force a timer restart to ensure it's running
+    if not updateTimer then
+        print("WARNING: Timer failed to start, retrying...")
+        updateTimer = os.startTimer(0.5)
+    end
+    
     -- Debug counter
     local eventCount = 0
     
     while true do
         -- Debug: show we're about to pull event
-        if state.crafting then
+        if state.crafting and eventCount % 10 == 0 then
             print("DEBUG: About to call os.pullEvent, eventCount=" .. eventCount .. " updateTimer=" .. tostring(updateTimer))
         end
         
@@ -420,7 +444,7 @@ local function main()
                     end
                 end
                 
-                -- ALWAYS restart timer, not just when IDs match
+                -- ALWAYS restart timer
                 updateTimer = os.startTimer(0.5)
                 if state.crafting then
                     print("New timer started with ID: " .. updateTimer)
