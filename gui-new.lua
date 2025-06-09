@@ -70,8 +70,8 @@ end
 
 -- Draw header
 local function drawHeader(title)
-    monitor.setBackgroundColor(colors.header)
-    monitor.setTextColor(colors.headerText)
+    monitor.setBackgroundColor(theme.header)
+    monitor.setTextColor(theme.headerText)
     monitor.setCursorPos(1, 1)
     monitor.write(string.rep(" ", width))
     monitor.setCursorPos(math.floor((width - #title) / 2), 1)
@@ -81,8 +81,8 @@ end
 
 -- Draw a button
 local function drawButton(x, y, w, h, text, bgColor, textColor)
-    bgColor = bgColor or colors.button
-    textColor = textColor or colors.buttonText
+    bgColor = bgColor or theme.button
+    textColor = textColor or theme.buttonText
     
     monitor.setBackgroundColor(bgColor)
     monitor.setTextColor(textColor)
