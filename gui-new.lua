@@ -214,6 +214,69 @@ function gui.showMainScreen()
     end
 end
 
+-- Show seed details
+function gui.showSeedDetails(seed)
+    clear()
+    buttons = {}
+    currentScreen = "details"
+    
+    drawHeader(seed.name)
+    
+    -- Ingredients section
+    local y = 4
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Ingredients Required:")
+    y = y + 2
+    
+    -- Check what we have vs what we need
+    local canCraft = true
+    for _, ingredient in ipairs(seed.ingredients) do
+        local have = me.getItemCount(ingredient.name)
+        local need = ingredient.count
+        
+        -- Determine color based on availability
+        local textColor = colors.white
+        if have >= need then
+            textColor = colors.lime
+        else
+            textColor = colors.red
+            canCraft = false
+        end
+        
+        -- Display ingredient info
+        monitor.setCursorPos(4, y)
+        monitor.setTextColor(textColor)
+        local displayName = ingredient.displayName or ingredient.name:match("([^:]+)$") or ingredient.name
+        monitor.write(string.format("%s: %d/%d", displayName, have, need))
+        y = y + 1
+    end
+    
+    -- Craft time
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Craft Time: ")
+    monitor.setTextColor(colors.white)
+    monitor.write((seed.time or 20) .. " seconds")
+    
+    -- Buttons
+    local buttonY = height - 8
+    
+    if canCraft then
+        -- Craft button (green)
+        drawButton(math.floor(width/2) - 20, buttonY, 18, 3, "Craft", colors.green, colors.white)
+        addButton("craft", math.floor(width/2) - 20, buttonY, 18, 3, {type = "craft", seed = seed})
+    else
+        -- Craft button (disabled/red)
+        drawButton(math.floor(width/2) - 20, buttonY, 18, 3, "Can't Craft", colors.red, colors.white)
+    end
+    
+    -- Back button
+    drawButton(math.floor(width/2) + 2, buttonY, 18, 3, "Back", colors.gray, colors.white)
+    addButton("back", math.floor(width/2) + 2, buttonY, 18, 3, {type = "back"})
+end
+
 -- Show quantity selector
 function gui.showQuantitySelector(seed, quantity)
     clear()
@@ -361,6 +424,11 @@ function gui.handleTouch(x, y, screen)
                     currentPage = math.min(totalPages, currentPage + 1)
                 end
                 gui.showMainScreen()
+            elseif btn.data.type == "back" then
+                gui.showMainScreen()
+            elseif btn.data.type == "craft" and screen == "details" then
+                -- From details screen, go to quantity selector
+                return {type = "quantity", seed = btn.data.seed}
             else
                 return btn.data
             end

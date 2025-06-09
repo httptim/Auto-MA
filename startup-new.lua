@@ -332,11 +332,23 @@ local function handleTouch(x, y)
             return
         end
         
-        -- Show quantity selector
+        -- Show seed details
         state.currentSeed = seed
-        state.currentQuantity = 1
-        state.screen = "quantity"
-        gui.showQuantitySelector(seed, 1)
+        state.screen = "details"
+        gui.showSeedDetails(seed)
+        
+    elseif state.screen == "details" and result then
+        if result.type == "quantity" then
+            -- From details, go to quantity selector
+            state.currentQuantity = 1
+            state.screen = "quantity"
+            gui.showQuantitySelector(result.seed, 1)
+        elseif result.type == "back" then
+            -- Back to main
+            state.screen = "main"
+            state.currentSeed = nil
+            gui.showMainScreen()
+        end
         
     elseif state.screen == "quantity" then
         if result.type == "adjust" then
