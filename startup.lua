@@ -153,7 +153,7 @@ local function setupWizard()
 end
 
 local function saveConfig(configData)
-    local file = fs.open(CONFIG_FILE, "w")
+    local file = fs.open("/mystical-automation/" .. CONFIG_FILE, "w")
     if not file then
         error("Failed to save configuration!")
     end
@@ -174,13 +174,13 @@ local function saveConfig(configData)
     file.write("}\n")
     
     file.close()
-    print("\nConfiguration saved to " .. CONFIG_FILE)
+    print("\nConfiguration saved to /mystical-automation/" .. CONFIG_FILE)
 end
 
 -- Module loading
 local function loadModules()
     -- Load configuration
-    if not fs.exists(CONFIG_FILE) then
+    if not fs.exists("/mystical-automation/" .. CONFIG_FILE) then
         print("No configuration found. Starting setup wizard...")
         local configData = setupWizard()
         saveConfig(configData)
@@ -189,7 +189,7 @@ local function loadModules()
     end
     
     -- Load config
-    config = dofile(CONFIG_FILE)
+    config = dofile("/mystical-automation/" .. CONFIG_FILE)
     if not config then
         error("Failed to load configuration!")
     end
