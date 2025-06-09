@@ -423,45 +423,29 @@ local function main()
                 print("Timer event! ID: " .. tostring(p1) .. " Expected: " .. tostring(updateTimer))
             end
             
-            if p1 == updateTimer then
-                -- Debug timer
-                if state.crafting and not state.timerDebugShown then
-                    print("Timer event received - updates working!")
-                    state.timerDebugShown = true
-                end
-                
-                -- Update craft progress if needed
-                updateCraftProgress()
-                
-                -- Update ingredient availability (fix the condition)
-                if state.screen == "main" and not state.crafting then
-                    gui.updateAvailability()
-                elseif state.screen == "crafting" and state.crafting then
-                    -- Update GUI during crafting too
-                    local progress = altar.getProgress()
-                    if state.currentSeed then
-                        gui.showProgress(state.currentSeed, progress)
-                    end
-                end
-                
-                -- ALWAYS restart timer
-                updateTimer = os.startTimer(0.5)
+            -- Instead of strict ID matching, just process any timer and restart
+            -- This handles cases where multiple timers might be queued
+            
+            -- Update craft progress if needed
+            updateCraftProgress()
+            
+            -- Update ingredient availability
+            if state.screen == "main" and not state.crafting then
+                gui.updateAvailability()
+            end
+            
+            -- Cancel the old timer if it exists and doesn't match
+            if updateTimer and p1 ~= updateTimer then
+                os.cancelTimer(updateTimer)
                 if state.crafting then
-                    print("New timer started with ID: " .. updateTimer)
+                    print("Cancelled old timer: " .. tostring(updateTimer))
                 end
-            else
-                -- Timer ID mismatch - this might happen if events queue up
-                if state.crafting then
-                    print("WARNING: Timer ID mismatch! Got " .. tostring(p1) .. " expected " .. tostring(updateTimer))
-                end
-                -- Make sure we have a timer running
-                if not updateTimer or p1 < updateTimer then
-                    -- This was an old timer, ignore it but make sure we have a new one
-                    updateTimer = os.startTimer(0.5)
-                    if state.crafting then
-                        print("Started replacement timer with ID: " .. updateTimer)
-                    end
-                end
+            end
+            
+            -- Always start a fresh timer
+            updateTimer = os.startTimer(0.5)
+            if state.crafting then
+                print("Started fresh timer with ID: " .. updateTimer)
             end
             
         elseif event == "key" and p1 == keys.q then
