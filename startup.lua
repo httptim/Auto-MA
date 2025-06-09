@@ -287,6 +287,8 @@ function startCraft(seed, quantity)
     
     -- Start the craft
     state.crafting = true
+    state.currentSeed = seed  -- Store the seed in state!
+    state.currentQuantity = quantity  -- Store quantity too
     state.craftStartTime = os.clock()
     state.screen = "crafting"
     
@@ -300,15 +302,32 @@ function startCraft(seed, quantity)
         return
     end
     
-    -- Show progress
+    -- Show initial progress
     gui.showProgress(seed, 0)
+    print("Craft started, monitoring progress...")
 end
 
 local function updateCraftProgress()
     if not state.crafting then return end
     
+    if not state.currentSeed then
+        print("ERROR: No current seed in state!")
+        return
+    end
+    
+    -- Use altar's progress calculation
+    local progress = altar.getProgress()
     local elapsed = os.clock() - state.craftStartTime
-    local progress = math.min(1, elapsed / (state.currentSeed.time or 20))
+    
+    -- Debug: confirm timer is working
+    if elapsed < 1 then
+        print("Timer working - craft progress update called")
+    end
+    
+    -- Debug output every 5 seconds
+    if math.floor(elapsed) % 5 == 0 then
+        print(string.format("Progress: %.1f%% (%.1fs elapsed)", progress * 100, elapsed))
+    end
     
     gui.showProgress(state.currentSeed, progress)
     
