@@ -259,10 +259,16 @@ end
 
 -- Show progress bar
 function gui.showProgress(seed, progress)
-    print("DEBUG GUI: showProgress called with progress=" .. tostring(progress))
-    if not monitor then
-        print("ERROR: Monitor is nil!")
-        return
+    -- Write to debug log
+    local f = fs.open("/debug-log.txt", "a")
+    if f then
+        f.writeLine(os.clock() .. ": GUI: showProgress called with progress=" .. tostring(progress))
+        if not monitor then
+            f.writeLine(os.clock() .. ": ERROR: Monitor is nil!")
+            f.close()
+            return
+        end
+        f.close()
     end
     
     clear()
@@ -276,7 +282,12 @@ function gui.showProgress(seed, progress)
     local barWidth = width - 4
     local filled = math.floor(barWidth * progress)
     
-    print(string.format("DEBUG GUI: Drawing progress bar - width=%d, filled=%d", barWidth, filled))
+    -- Debug log
+    f = fs.open("/debug-log.txt", "a")
+    if f then
+        f.writeLine(string.format(os.clock() .. ": GUI: Drawing progress bar - width=%d, filled=%d", barWidth, filled))
+        f.close()
+    end
     
     monitor.setCursorPos(2, barY)
     monitor.setBackgroundColor(colors.gray)
