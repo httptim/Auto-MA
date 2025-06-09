@@ -38,6 +38,13 @@ function gui.init(cfg, meModule, seedsData)
     width, height = monitor.getSize()
     
     print("GUI initialized on " .. width .. "x" .. height .. " monitor")
+    
+    -- Debug to file
+    local f = fs.open("/debug-log.txt", "a")
+    if f then
+        f.writeLine(os.clock() .. ": GUI: Monitor size = " .. width .. "x" .. height)
+        f.close()
+    end
     return true
 end
 
@@ -280,14 +287,24 @@ function gui.showProgress(seed, progress)
     -- Progress bar
     local barY = math.floor(height / 2) - 1
     local barWidth = width - 4
-    local filled = math.floor(barWidth * progress)
     
     -- Debug log
     f = fs.open("/debug-log.txt", "a")
     if f then
-        f.writeLine(string.format(os.clock() .. ": GUI: Drawing progress bar - width=%d, filled=%d", barWidth, filled))
+        f.writeLine(string.format(os.clock() .. ": GUI: width=%d, height=%d, barWidth=%d", width, height, barWidth))
+        
+        -- Check if dimensions are valid
+        if width == 0 or height == 0 then
+            f.writeLine(os.clock() .. ": ERROR: Monitor dimensions not set! Getting size now...")
+            width, height = monitor.getSize()
+            barWidth = width - 4
+            f.writeLine(os.clock() .. ": GUI: New dimensions - width=" .. width .. ", height=" .. height)
+        end
+        
         f.close()
     end
+    
+    local filled = math.floor(barWidth * progress)
     
     monitor.setCursorPos(2, barY)
     monitor.setBackgroundColor(colors.gray)
@@ -296,6 +313,13 @@ function gui.showProgress(seed, progress)
     monitor.setCursorPos(2, barY)
     monitor.setBackgroundColor(colors.lime)
     monitor.write(string.rep(" ", filled))
+    
+    -- Debug log final
+    f = fs.open("/debug-log.txt", "a")
+    if f then
+        f.writeLine(string.format(os.clock() .. ": GUI: Progress bar drawn - filled=%d of %d pixels", filled, barWidth))
+        f.close()
+    end
     
     -- Progress text
     monitor.setBackgroundColor(colors.black)
