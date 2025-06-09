@@ -551,7 +551,7 @@ local seeds = {
 
 -- Validate all seeds have required fields
 for id, seed in pairs(seeds) do
-    if type(seed) == "table" then
+    if type(seed) == "table" and id ~= "order" then
         assert(seed.name, "Seed " .. id .. " missing name")
         assert(seed.output, "Seed " .. id .. " missing output")
         assert(seed.ingredients, "Seed " .. id .. " missing ingredients")
