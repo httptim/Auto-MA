@@ -294,6 +294,7 @@ function startCraft(seed, quantity)
     state.timerDebugShown = false  -- Reset debug flag
     
     -- Begin altar crafting
+    print("Calling altar.startCraft...")
     local success, err = pcall(altar.startCraft, seed, quantity)
     if not success then
         gui.showError("Craft failed: " .. tostring(err))
@@ -306,6 +307,7 @@ function startCraft(seed, quantity)
     -- Show initial progress
     gui.showProgress(seed, 0)
     print("Craft started, monitoring progress...")
+    print("Returning to event loop...")
 end
 
 local function updateCraftProgress()
@@ -360,6 +362,11 @@ local function main()
     
     while true do
         local event, p1, p2, p3 = os.pullEvent()
+        
+        -- Debug: show all events when crafting
+        if state.crafting and event ~= "timer" then
+            print("Event: " .. event)
+        end
         
         if event == "monitor_touch" then
             handleTouch(p2, p3) -- p2=x, p3=y
