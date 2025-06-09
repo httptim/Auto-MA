@@ -7,7 +7,7 @@ local REPO_NAME = "Auto-MA"
 local BRANCH = "main"
 local INSTALL_DIR = "/mystical-automation"
 
--- File manifest for MysticalAgriculture Automation System (7 files)
+-- File manifest for MysticalAgriculture Automation System (8 files)
 local FILES = {
     -- Core files
     {url = "startup.lua", path = INSTALL_DIR .. "/startup.lua"},
@@ -16,6 +16,9 @@ local FILES = {
     {url = "altar.lua", path = INSTALL_DIR .. "/altar.lua"},
     {url = "gui.lua", path = INSTALL_DIR .. "/gui.lua"},
     {url = "seeds.lua", path = INSTALL_DIR .. "/seeds.lua"},
+    
+    -- Debug tool
+    {url = "debug.lua", path = INSTALL_DIR .. "/debug.lua"},
     
     -- Documentation
     {url = "README.md", path = INSTALL_DIR .. "/README.md"},
@@ -32,6 +35,11 @@ local LAUNCHERS = {
         name = "mystical",
         content = [[-- MysticalAgriculture Automation Launcher
 shell.run("/mystical-automation/startup.lua")]]
+    },
+    {
+        name = "mystical-debug",
+        content = [[-- MysticalAgriculture Debug Tool
+shell.run("/mystical-automation/debug.lua")]]
     },
 }
 
