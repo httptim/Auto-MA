@@ -60,7 +60,7 @@ function me.getItemCount(itemName)
     
     for _, item in ipairs(items) do
         if item.name == itemName then
-            return item.amount or 0
+            return item.count or 0
         end
     end
     
@@ -92,9 +92,9 @@ function me.checkIngredients(ingredients, quantity)
     debugFile.writeLine("Total items in ME: " .. #items)
     debugFile.writeLine("")
     
-    -- Build lookup table - check both 'amount' and 'count' fields
+    -- Build lookup table - use 'count' field (confirmed from ME Bridge data)
     for _, item in ipairs(items) do
-        local quantity = item.amount or item.count or 0
+        local quantity = item.count or 0
         itemCounts[item.name] = quantity
     end
     

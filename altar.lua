@@ -145,11 +145,20 @@ function altar.startSingleCraft(seed)
         end
     end
     
-    -- Activate altar with redstone pulse
+    -- Activate altar with redstone pulse on all sides
     sleep(0.5) -- Let items settle
-    redstoneIntegrator.setOutput(config.redstoneSide, true)
+    
+    -- Pulse all sides of the Redstone Integrator
+    local sides = {"north", "south", "east", "west", "up", "down"}
+    for _, side in ipairs(sides) do
+        redstoneIntegrator.setOutput(side, true)
+    end
+    
     sleep(0.1)
-    redstoneIntegrator.setOutput(config.redstoneSide, false)
+    
+    for _, side in ipairs(sides) do
+        redstoneIntegrator.setOutput(side, false)
+    end
     
     -- Altar is now crafting
     craftState.craftStartTime = os.clock()
@@ -234,11 +243,16 @@ end
 function altar.test()
     print("Testing altar system...")
     
-    -- Test redstone
-    print("Testing redstone pulse...")
-    redstoneIntegrator.setOutput(config.redstoneSide, true)
+    -- Test redstone on all sides
+    print("Testing redstone pulse on all sides...")
+    local sides = {"north", "south", "east", "west", "up", "down"}
+    for _, side in ipairs(sides) do
+        redstoneIntegrator.setOutput(side, true)
+    end
     sleep(0.5)
-    redstoneIntegrator.setOutput(config.redstoneSide, false)
+    for _, side in ipairs(sides) do
+        redstoneIntegrator.setOutput(side, false)
+    end
     print("Redstone test complete")
     
     -- Test pedestals
