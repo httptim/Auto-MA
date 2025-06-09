@@ -35,20 +35,7 @@ shell.run("/mystical-automation/startup.lua")]]
     },
 }
 
--- Theme colors
-local theme = {
-    title = colors.cyan,
-    subtitle = colors.lightBlue,
-    text = colors.white,
-    success = colors.lime,
-    error = colors.red,
-    warning = colors.yellow,
-    progress = colors.green,
-    background = colors.black,
-    box = colors.gray,
-    scrollBg = colors.gray,
-    scrollText = colors.lightGray
-}
+-- Theme colors (removing this - will use global colors API directly)
 
 -- Terminal size
 local width, height = term.getSize()
@@ -67,20 +54,20 @@ local scrollWindow = {
 -- Helper functions
 local function centerText(y, text, color)
     term.setCursorPos(math.floor((width - #text) / 2) + 1, y)
-    term.setTextColor(color or theme.text)
+    term.setTextColor(color or colors.white)
     term.write(text)
 end
 
 local function drawBox(x, y, w, h, title)
-    term.setTextColor(theme.box)
+    term.setTextColor(colors.gray)
     term.setCursorPos(x, y)
     term.write("+" .. string.rep("-", w - 2) .. "+")
     
     if title then
         term.setCursorPos(x + 2, y)
-        term.setTextColor(colors.title)
+        term.setTextColor(colors.cyan)
         term.write(" " .. title .. " ")
-        term.setTextColor(colors.box)
+        term.setTextColor(colors.gray)
     end
     
     for i = 1, h - 2 do
@@ -99,28 +86,28 @@ local function drawProgressBar(y, progress, label)
     local filled = math.floor(barWidth * progress)
     
     term.setCursorPos(5, y)
-    term.setTextColor(colors.text)
+    term.setTextColor(colors.white)
     term.clearLine()
     term.write(label)
     
     term.setCursorPos(5, y + 1)
-    term.setTextColor(colors.box)
+    term.setTextColor(colors.gray)
     term.write("[")
     
-    term.setTextColor(colors.progress)
+    term.setTextColor(colors.green)
     term.write(string.rep("=", filled))
     if filled < barWidth then
         term.write(">")
-        term.setTextColor(colors.box)
+        term.setTextColor(colors.gray)
         term.write(string.rep(" ", barWidth - filled - 1))
     end
     
-    term.setTextColor(colors.box)  -- Make sure we're using the right color
+    term.setTextColor(colors.gray)
     term.write("]")
     
     -- Put percentage after the bar
     term.write(" ")
-    term.setTextColor(colors.text)
+    term.setTextColor(colors.white)
     term.write(string.format("%3d%%", math.floor(progress * 100)))
 end
 
@@ -130,18 +117,18 @@ local function initScrollWindow()
     drawBox(scrollWindow.x, scrollWindow.y, scrollWindow.width, scrollWindow.height, "Download Log")
     
     -- Clear the inside
-    term.setBackgroundColor(colors.scrollBg)
+    term.setBackgroundColor(colors.gray)
     for i = 1, scrollWindow.height - 2 do
         term.setCursorPos(scrollWindow.x + 1, scrollWindow.y + i)
         term.write(string.rep(" ", scrollWindow.width - 2))
     end
-    term.setBackgroundColor(colors.background)
+    term.setBackgroundColor(colors.black)
 end
 
 -- Add line to scroll window
 local function addScrollLine(text, color, lineId)
     -- Add to lines buffer
-    local lineData = {text = text, color = color or colors.scrollText, id = lineId}
+    local lineData = {text = text, color = color or colors.lightGray, id = lineId}
     
     if lineId then
         -- Update existing line with same ID
@@ -171,7 +158,7 @@ end
 
 -- Update scroll window display
 function updateScrollWindow()
-    term.setBackgroundColor(colors.scrollBg)
+    term.setBackgroundColor(colors.gray)
     
     local displayHeight = scrollWindow.height - 2
     local startLine = scrollWindow.scrollPos + 1
@@ -200,7 +187,7 @@ function updateScrollWindow()
         local scrollBarHeight = math.max(1, math.floor(displayHeight * displayHeight / #scrollWindow.lines))
         local scrollBarPos = math.floor((displayHeight - scrollBarHeight) * scrollWindow.scrollPos / (#scrollWindow.lines - displayHeight))
         
-        term.setTextColor(colors.box)
+        term.setTextColor(colors.gray)
         for i = 1, displayHeight do
             term.setCursorPos(scrollWindow.x + scrollWindow.width - 2, scrollWindow.y + i)
             if i >= scrollBarPos + 1 and i <= scrollBarPos + scrollBarHeight then
@@ -211,11 +198,11 @@ function updateScrollWindow()
         end
     end
     
-    term.setBackgroundColor(colors.background)
+    term.setBackgroundColor(colors.black)
 end
 
 local function clearScreen()
-    term.setBackgroundColor(colors.background)
+    term.setBackgroundColor(colors.black)
     term.clear()
     term.setCursorPos(1, 1)
 end
@@ -224,18 +211,18 @@ local function drawTitle()
     clearScreen()
     
     -- ASCII art
-    term.setTextColor(colors.title)
-    centerText(2, " _   _ _   _         _____ _           ", colors.title)
-    centerText(3, "| | | | | | |       |_   _(_)          ", colors.title)
-    centerText(4, "| |_| | |_| |_ _ __   | |  _ _ __ ___  ", colors.title)
-    centerText(5, "|  _  | __| __| '_ \\  | | | | '_ ` _ \\ ", colors.title)
-    centerText(6, "| | | | |_| |_| |_) | | | | | | | | | |", colors.title)
-    centerText(7, "\\_| |_/\\__|\\__| .__/  \\_/ |_|_| |_| |_|", colors.title)
-    centerText(8, "              | |                      ", colors.title)
-    centerText(9, "              |_|                      ", colors.title)
+    term.setTextColor(colors.cyan)
+    centerText(2, " _   _ _   _         _____ _           ", colors.cyan)
+    centerText(3, "| | | | | | |       |_   _(_)          ", colors.cyan)
+    centerText(4, "| |_| | |_| |_ _ __   | |  _ _ __ ___  ", colors.cyan)
+    centerText(5, "|  _  | __| __| '_ \\  | | | | '_ ` _ \\ ", colors.cyan)
+    centerText(6, "| | | | |_| |_| |_) | | | | | | | | | |", colors.cyan)
+    centerText(7, "\\_| |_/\\__|\\__| .__/  \\_/ |_|_| |_| |_|", colors.cyan)
+    centerText(8, "              | |                      ", colors.cyan)
+    centerText(9, "              |_|                      ", colors.cyan)
     
-    centerText(11, "GitHub Installer", colors.subtitle)
-    centerText(12, "Installing: " .. REPO_NAME, colors.text)
+    centerText(11, "GitHub Installer", colors.lightBlue)
+    centerText(12, "Installing: " .. REPO_NAME, colors.white)
 end
 
 -- Create progress bar string
@@ -268,7 +255,7 @@ local function showProgress(current, total, fileInfo, fileProgress)
     
     -- Current file indicator
     term.setCursorPos(5, 18)
-    term.setTextColor(colors.text)
+    term.setTextColor(colors.white)
     term.clearLine()
     local displayName = fileInfo.url
     if #displayName > width - 15 then
@@ -290,7 +277,7 @@ local function showProgress(current, total, fileInfo, fileProgress)
     local progressBar = makeProgressBar(fileProgress, 20)
     local sizeInfo = string.format("%3d%%", math.floor(fileProgress * 100))
     local progressMsg = string.format("         └─ %s %s", progressBar, sizeInfo)
-    addScrollLine(progressMsg, colors.scrollText, "progress_" .. current)
+    addScrollLine(progressMsg, colors.lightGray, "progress_" .. current)
 end
 
 -- Complete file download
@@ -299,11 +286,11 @@ local function completeFileDownload(current, total, fileInfo)
     local status = string.format("[%3d/%3d]", current, total)
     local fileName = fileInfo.url:match("([^/]+)$") or fileInfo.url
     local message = string.format("%s ✓ Pulled %s", status, fileName)
-    addScrollLine(message, colors.success, "file_" .. current)
+    addScrollLine(message, colors.lime, "file_" .. current)
     
     -- Update progress bar to complete
     local progressMsg = string.format("         └─ %s 100%%", makeProgressBar(1, 20))
-    addScrollLine(progressMsg, colors.success, "progress_" .. current)
+    addScrollLine(progressMsg, colors.lime, "progress_" .. current)
 end
 
 -- Download file with animated progress
@@ -328,8 +315,8 @@ local function downloadFile(fileInfo, index, total)
     
     local response = http.get(url)
     if not response then
-        local errorMsg = string.format("         └─ ✗ Failed to download", colors.error)
-        addScrollLine(errorMsg, colors.error, "progress_" .. index)
+        local errorMsg = string.format("         └─ ✗ Failed to download", colors.red)
+        addScrollLine(errorMsg, colors.red, "progress_" .. index)
         return false, "Failed to download: " .. fileInfo.url
     end
     
@@ -338,8 +325,8 @@ local function downloadFile(fileInfo, index, total)
     
     local file = fs.open(fileInfo.path, "w")
     if not file then
-        local errorMsg = string.format("         └─ ✗ Failed to write file", colors.error)
-        addScrollLine(errorMsg, colors.error, "progress_" .. index)
+        local errorMsg = string.format("         └─ ✗ Failed to write file", colors.red)
+        addScrollLine(errorMsg, colors.red, "progress_" .. index)
         return false, "Failed to write: " .. fileInfo.path
     end
     
@@ -361,56 +348,56 @@ local function install()
     
     -- Check HTTP
     if not http then
-        addScrollLine("✗ HTTP API is not enabled", colors.error)
+        addScrollLine("✗ HTTP API is not enabled", colors.red)
         sleep(2)
         return false
     end
     
-    addScrollLine("Starting installation...", colors.text)
-    addScrollLine("Repository: " .. REPO_OWNER .. "/" .. REPO_NAME, colors.text)
-    addScrollLine("Branch: " .. BRANCH, colors.text)
-    addScrollLine("", colors.text)
+    addScrollLine("Starting installation...", colors.white)
+    addScrollLine("Repository: " .. REPO_OWNER .. "/" .. REPO_NAME, colors.white)
+    addScrollLine("Branch: " .. BRANCH, colors.white)
+    addScrollLine("", colors.white)
     
     -- Create directories
-    addScrollLine("Creating directory structure...", colors.warning)
+    addScrollLine("Creating directory structure...", colors.yellow)
     for _, dir in ipairs(DIRECTORIES) do
         if not fs.exists(dir) then
             fs.makeDir(dir)
-            addScrollLine("  ✓ Created " .. dir, colors.success)
+            addScrollLine("  ✓ Created " .. dir, colors.lime)
         else
-            addScrollLine("  • Exists " .. dir, colors.scrollText)
+            addScrollLine("  • Exists " .. dir, colors.lightGray)
         end
     end
     
-    addScrollLine("", colors.text)
-    addScrollLine("Downloading files...", colors.warning)
+    addScrollLine("", colors.white)
+    addScrollLine("Downloading files...", colors.yellow)
     
     -- Download files
     local total = #FILES
     for i, fileInfo in ipairs(FILES) do
         local success, err = downloadFile(fileInfo, i, total)
         if not success then
-            addScrollLine("✗ Installation failed: " .. err, colors.error)
+            addScrollLine("✗ Installation failed: " .. err, colors.red)
             sleep(3)
             return false
         end
     end
     
     -- Create launchers
-    addScrollLine("", colors.text)
-    addScrollLine("Creating launcher scripts...", colors.warning)
+    addScrollLine("", colors.white)
+    addScrollLine("Creating launcher scripts...", colors.yellow)
     for _, launcher in ipairs(LAUNCHERS) do
         local file = fs.open("/" .. launcher.name, "w")
         if file then
             file.write(launcher.content)
             file.close()
-            addScrollLine("  ✓ Created " .. launcher.name, colors.success)
+            addScrollLine("  ✓ Created " .. launcher.name, colors.lime)
         end
     end
     
-    addScrollLine("", colors.text)
-    addScrollLine("✓ Installation complete!", colors.success)
-    addScrollLine("Run 'mystical' to start the automation system!", colors.success)
+    addScrollLine("", colors.white)
+    addScrollLine("✓ Installation complete!", colors.lime)
+    addScrollLine("Run 'mystical' to start the automation system!", colors.lime)
     
     sleep(2)
     
