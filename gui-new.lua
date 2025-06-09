@@ -222,35 +222,85 @@ function gui.showSeedDetails(seed)
     
     drawHeader(seed.name)
     
-    -- Ingredients section
-    local y = 4
+    -- Current stock section
+    local y = 3
     monitor.setCursorPos(2, y)
     monitor.setTextColor(colors.yellow)
-    monitor.write("Ingredients Required:")
+    monitor.write("Current Stock:")
+    monitor.setTextColor(colors.white)
+    
+    local currentStock = me.getItemCount(seed.output or ("mysticalagriculture:" .. seed.id))
+    monitor.setCursorPos(4, y + 1)
+    monitor.write(currentStock .. " seeds in ME system")
+    
+    -- Separator line
+    y = y + 3
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.gray)
+    monitor.write(string.rep("-", width - 4))
+    
+    -- Ingredients section
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Ingredients Required (per seed):")
     y = y + 2
     
     -- Check what we have vs what we need
     local canCraft = true
+    local maxCraftable = 999999  -- Start with a high number
+    
     for _, ingredient in ipairs(seed.ingredients) do
         local have = me.getItemCount(ingredient.name)
         local need = ingredient.count
+        local craftable = math.floor(have / need)
+        
+        -- Track minimum craftable
+        if craftable < maxCraftable then
+            maxCraftable = craftable
+        end
         
         -- Determine color based on availability
         local textColor = colors.white
+        local statusSymbol = " "
         if have >= need then
             textColor = colors.lime
+            statusSymbol = "+"
         else
             textColor = colors.red
+            statusSymbol = "-"
             canCraft = false
         end
         
-        -- Display ingredient info
+        -- Display ingredient info with better formatting
         monitor.setCursorPos(4, y)
         monitor.setTextColor(textColor)
+        monitor.write(statusSymbol .. " ")
+        
+        -- Extract readable name
         local displayName = ingredient.displayName or ingredient.name:match("([^:]+)$") or ingredient.name
-        monitor.write(string.format("%s: %d/%d", displayName, have, need))
+        -- Capitalize first letter
+        displayName = displayName:sub(1,1):upper() .. displayName:sub(2)
+        displayName = displayName:gsub("_", " ")
+        
+        monitor.write(displayName)
+        
+        -- Right-align the numbers
+        local numbers = string.format("%d / %d", have, need)
+        local xPos = width - #numbers - 2
+        monitor.setCursorPos(xPos, y)
+        monitor.write(numbers)
+        
         y = y + 1
     end
+    
+    -- Max craftable section
+    y = y + 2
+    monitor.setCursorPos(2, y)
+    monitor.setTextColor(colors.yellow)
+    monitor.write("Maximum Craftable: ")
+    monitor.setTextColor(canCraft and colors.lime or colors.red)
+    monitor.write(maxCraftable .. " seeds")
     
     -- Craft time
     y = y + 2
@@ -258,7 +308,7 @@ function gui.showSeedDetails(seed)
     monitor.setTextColor(colors.yellow)
     monitor.write("Craft Time: ")
     monitor.setTextColor(colors.white)
-    monitor.write((seed.time or 20) .. " seconds")
+    monitor.write("~5-7 seconds per seed")
     
     -- Buttons
     local buttonY = height - 8
@@ -425,7 +475,8 @@ function gui.handleTouch(x, y, screen)
                 end
                 gui.showMainScreen()
             elseif btn.data.type == "back" then
-                gui.showMainScreen()
+                -- Return the back action to the main handler
+                return btn.data
             elseif btn.data.type == "craft" and screen == "details" then
                 -- From details screen, go to quantity selector
                 return {type = "quantity", seed = btn.data.seed}
