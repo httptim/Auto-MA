@@ -236,7 +236,7 @@ local function monitorCraft()
         end
         
         -- Small delay to not spam updates
-        sleep(0.1)
+        sleep(0.5)
     end
     
     print("Craft monitor ended")
@@ -244,6 +244,15 @@ end
 
 -- Start crafting
 local function startCraft(seed, quantity)
+    -- Validate seed has required fields
+    if not seed.ingredients then
+        gui.showError("Invalid seed: no ingredients defined")
+        sleep(2)
+        state.screen = "main"
+        gui.showMainScreen()
+        return
+    end
+    
     -- Check ingredients
     local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
     
