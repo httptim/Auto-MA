@@ -3,68 +3,35 @@
 
 -- Configuration for MysticalAgriculture Automation System
 local REPO_OWNER = "httptim"  -- Change this to your GitHub username
-local REPO_NAME = "mystical-agriculture-automation"
+local REPO_NAME = "Auto-MA"
 local BRANCH = "main"
 local INSTALL_DIR = "/mystical-automation"
 
--- File manifest for MysticalAgriculture Automation System
+-- File manifest for MysticalAgriculture Automation System (7 files)
 local FILES = {
-    -- Main files
+    -- Core files
     {url = "startup.lua", path = INSTALL_DIR .. "/startup.lua"},
     {url = "config.lua", path = INSTALL_DIR .. "/config.lua"},
-    
-    -- Core modules
-    {url = "modules/gui.lua", path = INSTALL_DIR .. "/modules/gui.lua"},
-    {url = "modules/automation.lua", path = INSTALL_DIR .. "/modules/automation.lua"},
-    {url = "modules/database.lua", path = INSTALL_DIR .. "/modules/database.lua"},
-    {url = "modules/me_interface.lua", path = INSTALL_DIR .. "/modules/me_interface.lua"},
-    {url = "modules/utils.lua", path = INSTALL_DIR .. "/modules/utils.lua"},
-    {url = "modules/error_handler.lua", path = INSTALL_DIR .. "/modules/error_handler.lua"},
-    
-    -- Data files
-    {url = "data/seeds.lua", path = INSTALL_DIR .. "/data/seeds.lua"},
-    {url = "data/recipes.lua", path = INSTALL_DIR .. "/data/recipes.lua"},
-    
-    -- Assets
-    {url = "assets/icons.lua", path = INSTALL_DIR .. "/assets/icons.lua"},
-    {url = "assets/colors.lua", path = INSTALL_DIR .. "/assets/colors.lua"},
-    
-    -- Configuration tools
-    {url = "tools/config_wizard.lua", path = INSTALL_DIR .. "/tools/config_wizard.lua"},
-    {url = "tools/test_altar.lua", path = INSTALL_DIR .. "/tools/test_altar.lua"},
+    {url = "me.lua", path = INSTALL_DIR .. "/me.lua"},
+    {url = "altar.lua", path = INSTALL_DIR .. "/altar.lua"},
+    {url = "gui.lua", path = INSTALL_DIR .. "/gui.lua"},
+    {url = "seeds.lua", path = INSTALL_DIR .. "/seeds.lua"},
     
     -- Documentation
-    {url = "docs/user_manual.md", path = INSTALL_DIR .. "/docs/user_manual.md"},
-    {url = "docs/troubleshooting.md", path = INSTALL_DIR .. "/docs/troubleshooting.md"},
+    {url = "README.md", path = INSTALL_DIR .. "/README.md"},
 }
 
--- Directories to create
+-- Directories to create  
 local DIRECTORIES = {
-    INSTALL_DIR .. "/modules", 
-    INSTALL_DIR .. "/data", 
-    INSTALL_DIR .. "/assets", 
-    INSTALL_DIR .. "/logs", 
-    INSTALL_DIR .. "/cache", 
-    INSTALL_DIR .. "/tools", 
-    INSTALL_DIR .. "/docs"
+    INSTALL_DIR
 }
 
 -- Launcher scripts
 local LAUNCHERS = {
     {
-        name = "mystical-auto",
+        name = "mystical",
         content = [[-- MysticalAgriculture Automation Launcher
 shell.run("/mystical-automation/startup.lua")]]
-    },
-    {
-        name = "mystical-config",
-        content = [[-- Configuration Wizard
-shell.run("/mystical-automation/tools/config_wizard.lua")]]
-    },
-    {
-        name = "test-altar", 
-        content = [[-- Altar Testing Tool
-shell.run("/mystical-automation/tools/test_altar.lua")]]
     },
 }
 
@@ -443,8 +410,7 @@ local function install()
     
     addScrollLine("", colors.text)
     addScrollLine("✓ Installation complete!", colors.success)
-    addScrollLine("Run 'mystical-auto' to start the automation system!", colors.success)
-    addScrollLine("Run 'mystical-config' to configure your setup!", colors.success)
+    addScrollLine("Run 'mystical' to start the automation system!", colors.success)
     
     sleep(3)
     return true
