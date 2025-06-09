@@ -85,11 +85,10 @@ An advanced automation system that integrates MysticalAgriculture seed crafting 
 - Multiple Infusion Altars (recommend 2-4 for throughput)
 - 8x Infusion Pedestals per altar (positioned according to ghost blocks)
 - Wired Modems for each pedestal
-- Redstone Integrators (Advanced Peripherals) - one per altar for activation
+- 1x Redstone Block per altar - placed adjacent for constant activation
 
 **ME Network Integration:**
 - 1x ME Bridge (Advanced Peripherals)
-- 1x Redstone Integrator (Advanced Peripherals) - for altar activation
 - AE2 ME Controller and storage infrastructure
 - ME Import/Export buses (for manual backup integration)
 
@@ -117,18 +116,18 @@ Infusion Altar Layout (per altar):
       / | \
     P   P   P
          |
-      [R.I.] -- Redstone Integrator (Advanced Peripherals)
-         |      with wired modem, positioned behind altar
+      [R.B.] -- Redstone Block (placed adjacent to altar)
+         
     [Wired Modem Network]
 
-Legend: A = Altar, P = Pedestal, R.I. = Redstone Integrator
+Legend: A = Altar, P = Pedestal, R.B. = Redstone Block
 ```
 
 **Redstone Setup Notes:**
-- Each altar requires its own Redstone Integrator from Advanced Peripherals
-- Position the Redstone Integrator behind the altar (any side that can send redstone signal to the altar)
-- Connect the Redstone Integrator to the wired modem network
-- The altar also needs a wired modem for pedestal connectivity (separate from redstone control)
+- Each altar requires a redstone block placed adjacent to it for constant activation
+- The redstone block keeps the altar always ready to craft
+- No redstone integrator needed - simpler setup
+- The altar still needs a wired modem for pedestal connectivity
 
 ## Software Dependencies
 

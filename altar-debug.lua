@@ -8,17 +8,12 @@ print("================")
 
 -- Connect to peripherals
 local altar = peripheral.wrap(config.altar)
-local redstone = peripheral.wrap(config.redstoneIntegrator)
 
 if not altar then
     error("Failed to connect to altar: " .. config.altar)
 end
 
-if not redstone then
-    error("Failed to connect to redstone integrator: " .. config.redstoneIntegrator)
-end
-
-print("Connected to altar and redstone integrator")
+print("Connected to altar")
 print("")
 
 -- Test 1: Check altar inventory
@@ -56,25 +51,10 @@ end
 
 print("")
 
--- Test 3: Test redstone pulse
-print("3. Testing redstone pulse (watch the altar):")
-print("   Pulsing all sides in 3 seconds...")
-sleep(3)
-
-local sides = {"north", "south", "east", "west", "up", "down"}
-print("   Setting all sides HIGH")
-for _, side in ipairs(sides) do
-    redstone.setOutput(side, true)
-end
-
-sleep(1)
-
-print("   Setting all sides LOW")
-for _, side in ipairs(sides) do
-    redstone.setOutput(side, false)
-end
-
-print("   Redstone pulse complete")
+-- Test 3: Redstone block info
+print("3. Redstone activation:")
+print("   Using always-on redstone block")
+print("   Make sure redstone block is placed behind altar")
 print("")
 
 -- Test 4: Monitor altar for changes
@@ -121,7 +101,7 @@ print("")
 print("Debug complete!")
 print("")
 print("Common issues:")
-print("- Make sure the Redstone Integrator is adjacent to the altar")
-print("- Check that the altar has power (if required)")
-print("- Verify all pedestals have items before activation")
-print("- Some altars need specific patterns or all pedestals filled")
+print("- Make sure a redstone block is placed adjacent to the altar")
+print("- Check that the altar has the correct items")
+print("- Verify all pedestals have items (1 per pedestal)")
+print("- Prosperity seed base goes in the altar center")

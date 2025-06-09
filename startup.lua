@@ -137,13 +137,7 @@ local function setupWizard()
         pedestalChoices = newChoices
     end
     
-    -- Select redstone integrator
-    if peripherals.redstoneIntegrator and #peripherals.redstoneIntegrator > 0 then
-        selectedConfig.redstoneIntegrator = selectFromList("Select Redstone Integrator for altar activation:", peripherals.redstoneIntegrator)
-        -- No need to ask for side anymore - we pulse all sides
-    else
-        error("No Redstone Integrator found! This is required for altar activation.")
-    end
+    -- No redstone integrator needed - using always-on redstone block
     
     return selectedConfig
 end
@@ -164,8 +158,7 @@ local function saveConfig(configData)
     for i, pedestal in ipairs(configData.pedestals) do
         file.write("        \"" .. pedestal .. "\",\n")
     end
-    file.write("    },\n")
-    file.write("    redstoneIntegrator = \"" .. configData.redstoneIntegrator .. "\"\n")
+    file.write("    }\n")
     file.write("}\n")
     
     file.close()

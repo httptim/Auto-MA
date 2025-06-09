@@ -8,14 +8,14 @@ local me = nil
 -- Peripheral references
 local altarInv = nil
 local pedestals = {}
-local redstoneIntegrator = nil
 
 -- Current craft state
 local craftState = {
     active = false,
     seed = nil,
     quantity = 0,
-    startTime = 0
+    startTime = 0,
+    craftStarted = false  -- Track if altar consumed items
 }
 
 -- Initialize altar system
@@ -38,11 +38,7 @@ function altar.init(cfg, meModule)
         pedestals[i] = pedestal
     end
     
-    -- Connect to redstone integrator
-    redstoneIntegrator = peripheral.wrap(config.redstoneIntegrator)
-    if not redstoneIntegrator then
-        error("Failed to connect to redstone integrator: " .. config.redstoneIntegrator)
-    end
+    -- No redstone integrator needed - using always-on redstone block
     
     print("Altar system initialized with " .. #pedestals .. " pedestals")
     return true
@@ -140,6 +136,7 @@ function altar.startCraft(seed, quantity)
     craftState.quantity = quantity
     craftState.currentCraft = 1
     craftState.startTime = os.clock()
+    craftState.craftStarted = false
     
     -- Start first craft
     altar.startSingleCraft(seed)
@@ -172,26 +169,13 @@ function altar.startSingleCraft(seed)
         end
     end
     
-    -- Activate altar with redstone pulse on all sides
+    -- Wait for items to settle before craft starts
     print("Waiting for items to settle...")
     sleep(0.5) -- Let items settle
     
-    -- Pulse all sides of the Redstone Integrator
-    print("Activating altar with redstone pulse...")
-    local sides = {"north", "south", "east", "west", "up", "down"}
-    for _, side in ipairs(sides) do
-        redstoneIntegrator.setOutput(side, true)
-    end
-    
-    sleep(0.1)
-    
-    for _, side in ipairs(sides) do
-        redstoneIntegrator.setOutput(side, false)
-    end
-    
-    -- Altar is now crafting
+    -- Altar should start automatically with redstone block
     craftState.craftStartTime = os.clock()
-    print("Altar activated, crafting started")
+    print("Items placed, altar should start crafting")
 end
 
 -- Check if current craft is complete
@@ -200,18 +184,31 @@ function altar.checkComplete()
         return false
     end
     
-    -- Check altar output slot (usually slot 1)
+    -- Assume craft starts after a short delay with redstone block
+    -- (Since we can't reliably detect when altar consumes items)
+    if not craftState.craftStarted then
+        local elapsed = os.clock() - craftState.craftStartTime
+        if elapsed > 2 then  -- After 2 seconds, assume craft started
+            craftState.craftStarted = true
+            print("Assuming craft started after 2 second delay")
+        end
+    end
+    
+    -- Check altar for any output (anything other than base seed)
     local altarItems = altarInv.list()
     
-    -- Look for the output seed
+    -- Look for any item that's not the prosperity seed base
     for slot, item in pairs(altarItems) do
-        if item.name == craftState.seed.output then
+        -- If we find any item that's not the base seed, it's the output
+        if item.name ~= "mysticalagriculture:prosperity_seed_base" then
             -- Found output! Import to ME
+            print("Craft complete! Found output: " .. item.name)
             me.importItem(item.name, item.count, config.altar)
             
             -- Check if we need more crafts
             if craftState.currentCraft < craftState.quantity then
                 craftState.currentCraft = craftState.currentCraft + 1
+                craftState.craftStarted = false  -- Reset for next craft
                 altar.startSingleCraft(craftState.seed)
                 return false -- Still crafting more
             else
@@ -225,7 +222,14 @@ function altar.checkComplete()
     
     -- Check for timeout
     local elapsed = os.clock() - craftState.craftStartTime
-    if elapsed > (config.settings.craftTimeout or 30) then
+    local timeout = config.settings and config.settings.craftTimeout or 30
+    
+    -- If craft hasn't started yet, don't timeout as quickly
+    if not craftState.craftStarted and elapsed < 10 then
+        return false
+    end
+    
+    if elapsed > timeout then
         error("Craft timeout - no output detected")
     end
     
@@ -240,6 +244,11 @@ function altar.getProgress()
     
     local elapsed = os.clock() - craftState.craftStartTime
     local expectedTime = craftState.seed.time or 20
+    
+    -- If craft hasn't started yet, show minimal progress
+    if not craftState.craftStarted then
+        return (craftState.currentCraft - 1) / craftState.quantity + (0.1 / craftState.quantity)
+    end
     
     -- Add progress for completed crafts
     local baseProgress = (craftState.currentCraft - 1) / craftState.quantity
@@ -273,17 +282,8 @@ end
 function altar.test()
     print("Testing altar system...")
     
-    -- Test redstone on all sides
-    print("Testing redstone pulse on all sides...")
-    local sides = {"north", "south", "east", "west", "up", "down"}
-    for _, side in ipairs(sides) do
-        redstoneIntegrator.setOutput(side, true)
-    end
-    sleep(0.5)
-    for _, side in ipairs(sides) do
-        redstoneIntegrator.setOutput(side, false)
-    end
-    print("Redstone test complete")
+    -- No redstone test needed - using always-on redstone block
+    print("Using always-on redstone block - no test needed")
     
     -- Test pedestals
     print("Found " .. #pedestals .. " pedestals")
