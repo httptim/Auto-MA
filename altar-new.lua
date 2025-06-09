@@ -174,14 +174,14 @@ function altar.checkComplete()
     
     -- Wait a bit before checking (altar needs time to consume items)
     local elapsed = os.clock() - craftState.craftStartTime
-    if elapsed < 2 then
+    if elapsed < 1 then  -- Reduced from 2 to 1 second
         return false
     end
     
-    -- Mark craft as started after 2 seconds
-    if not craftState.craftStarted and elapsed >= 2 then
+    -- Mark craft as started after 1 second
+    if not craftState.craftStarted and elapsed >= 1 then
         craftState.craftStarted = true
-        print("Craft started (2 second delay)")
+        print("Craft started (1 second delay)")
     end
     
     -- Check altar for output
@@ -224,7 +224,8 @@ function altar.getProgress()
     end
     
     local elapsed = os.clock() - craftState.craftStartTime
-    local expectedTime = craftState.seed.time or 5  -- Reduced default time
+    -- Ignore seed time, use realistic altar craft time (about 5-7 seconds)
+    local expectedTime = 6
     
     -- Base progress from completed crafts
     local baseProgress = (craftState.currentCraft - 1) / craftState.quantity
@@ -235,8 +236,8 @@ function altar.getProgress()
         -- After craft starts, show actual progress
         currentProgress = math.min(1, elapsed / expectedTime) / craftState.quantity
     else
-        -- Before craft starts, show minimal progress
-        currentProgress = math.min(0.1, elapsed / 2) / craftState.quantity
+        -- Before craft starts, show quick initial progress
+        currentProgress = math.min(0.15, elapsed) / craftState.quantity
     end
     
     return baseProgress + currentProgress
