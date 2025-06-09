@@ -19,9 +19,6 @@ local FILES = {
     
     -- Documentation
     {url = "README.md", path = INSTALL_DIR .. "/README.md"},
-    
-    -- Cleanup script (temporary)
-    {url = "cleanup.lua", path = INSTALL_DIR .. "/cleanup.lua"},
 }
 
 -- Directories to create  
@@ -32,7 +29,7 @@ local DIRECTORIES = {
 -- Launcher scripts
 local LAUNCHERS = {
     {
-        name = "mystical",
+        name = "startup",
         content = [[-- MysticalAgriculture Automation Launcher
 shell.run("/mystical-automation/startup.lua")]]
     },
