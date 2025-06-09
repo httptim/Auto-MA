@@ -78,9 +78,9 @@ local function distributeIngredients(ingredients)
     local pedestalIngredients = {}
     local seedBase = nil
     
-    -- Separate seed base from pedestal ingredients
+    -- Separate crafting seed from pedestal ingredients
     for _, ingredient in ipairs(ingredients) do
-        if ingredient.name:find("seed_base") then
+        if ingredient.name:find("crafting_seed") or ingredient.name:find("seed_base") then
             seedBase = ingredient
         else
             table.insert(pedestalIngredients, ingredient)

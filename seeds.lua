@@ -1,39 +1,103 @@
 -- Seeds Database
--- Common MysticalAgriculture seeds and their recipes
+-- Common MysticalAgriculture seeds and their recipes with CORRECT tiers
 
 local seeds = {
     -- Define display order
     order = {
-        -- Resource seeds (Tier 1-2)
-        "iron_seeds",
-        "gold_seeds",
-        "copper_seeds",
+        -- Tier 1-2 seeds
+        "dirt_seeds",
+        "stone_seeds",
+        "wood_seeds",
         "coal_seeds",
-        "redstone_seeds",
-        "lapis_seeds",
-        "quartz_seeds",
-        "glowstone_seeds",
         
-        -- Mob seeds (Tier 2-3)
+        -- Tier 3 seeds
+        "iron_seeds",
+        "copper_seeds",
+        "redstone_seeds",
+        "glowstone_seeds",
+        "quartz_seeds",
+        
+        -- Tier 4 seeds
+        "gold_seeds",
+        "lapis_seeds",
+        
+        -- Tier 5 seeds
+        "diamond_seeds",
+        "emerald_seeds",
+        "netherite_seeds",
+        
+        -- Mob seeds (various tiers)
         "zombie_seeds",
         "skeleton_seeds",
         "creeper_seeds",
         "spider_seeds",
         "blaze_seeds",
         "enderman_seeds",
-        
-        -- Higher tier resources (Tier 3-4)
-        "diamond_seeds",
-        "emerald_seeds",
-        "netherite_seeds",
-        
-        -- Nature seeds
-        "wood_seeds",
-        "stone_seeds",
-        "dirt_seeds"
     },
     
-    -- Tier 1-2 Resource Seeds
+    -- TIER 1 SEEDS (Inferium Essence)
+    ["dirt_seeds"] = {
+        name = "Dirt Seeds",
+        shortName = "Dirt",
+        output = "mysticalagriculture:dirt_seeds",
+        time = 20,
+        ingredients = {
+            {name = "minecraft:dirt", count = 4},
+            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:inferium_essence", count = 4}
+        }
+    },
+    
+    ["stone_seeds"] = {
+        name = "Stone Seeds",
+        shortName = "Stone",
+        output = "mysticalagriculture:stone_seeds", 
+        time = 20,
+        ingredients = {
+            {name = "minecraft:stone", count = 4},
+            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:inferium_essence", count = 4}
+        }
+    },
+    
+    ["wood_seeds"] = {
+        name = "Wood Seeds",
+        shortName = "Wood",
+        output = "mysticalagriculture:wood_seeds",
+        time = 20,
+        ingredients = {
+            {name = "minecraft:oak_log", count = 4}, -- Could be any wood type
+            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:inferium_essence", count = 4}
+        }
+    },
+    
+    ["zombie_seeds"] = {
+        name = "Zombie Seeds",
+        shortName = "Zombie",
+        output = "mysticalagriculture:zombie_seeds",
+        time = 20,
+        ingredients = {
+            {name = "mysticalagriculture:zombie_chunk", count = 4}, -- Requires mob chunks
+            {name = "mysticalagriculture:tier1_crafting_seed", count = 1},
+            {name = "mysticalagriculture:inferium_essence", count = 4}
+        }
+    },
+    
+    -- TIER 2 SEEDS (Prudentium Essence)
+    ["coal_seeds"] = {
+        name = "Coal Seeds",
+        shortName = "Coal",
+        output = "mysticalagriculture:coal_seeds",
+        time = 20,
+        ingredients = {
+            {name = "minecraft:coal", count = 4},
+            {name = "mysticalagriculture:tier2_crafting_seed", count = 1},
+            {name = "mysticalagriculture:prudentium_essence", count = 4}
+        }
+    },
+    
+    -- TIER 3 SEEDS (Tertium Essence)
     ["iron_seeds"] = {
         name = "Iron Seeds",
         shortName = "Iron",
@@ -41,20 +105,8 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:iron_ingot", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
-        }
-    },
-    
-    ["gold_seeds"] = {
-        name = "Gold Seeds",
-        shortName = "Gold",
-        output = "mysticalagriculture:gold_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:gold_ingot", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
@@ -65,20 +117,8 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:copper_ingot", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
-        }
-    },
-    
-    ["coal_seeds"] = {
-        name = "Coal Seeds",
-        shortName = "Coal",
-        output = "mysticalagriculture:coal_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:coal", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
@@ -89,32 +129,8 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:redstone", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
-        }
-    },
-    
-    ["lapis_seeds"] = {
-        name = "Lapis Lazuli Seeds",
-        shortName = "Lapis",
-        output = "mysticalagriculture:lapis_lazuli_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:lapis_lazuli", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
-        }
-    },
-    
-    ["quartz_seeds"] = {
-        name = "Nether Quartz Seeds",
-        shortName = "Quartz",
-        output = "mysticalagriculture:nether_quartz_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:quartz", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
@@ -125,21 +141,20 @@ local seeds = {
         time = 20,
         ingredients = {
             {name = "minecraft:glowstone_dust", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
             {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
-    -- Mob Seeds
-    ["zombie_seeds"] = {
-        name = "Zombie Seeds",
-        shortName = "Zombie",
-        output = "mysticalagriculture:zombie_seeds",
+    ["quartz_seeds"] = {
+        name = "Nether Quartz Seeds",
+        shortName = "Quartz",
+        output = "mysticalagriculture:nether_quartz_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:zombie_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "minecraft:quartz", count = 4},
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
@@ -149,9 +164,9 @@ local seeds = {
         output = "mysticalagriculture:skeleton_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:skeleton_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "mysticalagriculture:skeleton_chunk", count = 4},
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
@@ -161,21 +176,46 @@ local seeds = {
         output = "mysticalagriculture:creeper_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:creeper_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "mysticalagriculture:creeper_chunk", count = 4},
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
         }
     },
     
     ["spider_seeds"] = {
-        name = "Spider Seeds",
+        name = "Spider Seeds", 
         shortName = "Spider",
         output = "mysticalagriculture:spider_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:spider_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:prudentium_essence", count = 4}
+            {name = "mysticalagriculture:spider_chunk", count = 4},
+            {name = "mysticalagriculture:tier3_crafting_seed", count = 1},
+            {name = "mysticalagriculture:tertium_essence", count = 4}
+        }
+    },
+    
+    -- TIER 4 SEEDS (Imperium Essence)
+    ["gold_seeds"] = {
+        name = "Gold Seeds",
+        shortName = "Gold",
+        output = "mysticalagriculture:gold_seeds",
+        time = 20,
+        ingredients = {
+            {name = "minecraft:gold_ingot", count = 4},
+            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:imperium_essence", count = 4}
+        }
+    },
+    
+    ["lapis_seeds"] = {
+        name = "Lapis Lazuli Seeds",
+        shortName = "Lapis",
+        output = "mysticalagriculture:lapis_lazuli_seeds",
+        time = 20,
+        ingredients = {
+            {name = "minecraft:lapis_lazuli", count = 4},
+            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
     
@@ -185,9 +225,9 @@ local seeds = {
         output = "mysticalagriculture:blaze_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:blaze_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:tertium_essence", count = 4}
+            {name = "mysticalagriculture:blaze_chunk", count = 4},
+            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
     
@@ -197,34 +237,34 @@ local seeds = {
         output = "mysticalagriculture:enderman_seeds",
         time = 20,
         ingredients = {
-            {name = "mysticalagriculture:enderman_essence", count = 4},
-            {name = "mysticalagriculture:soulium_seed_base", count = 1},
-            {name = "mysticalagriculture:tertium_essence", count = 4}
+            {name = "mysticalagriculture:enderman_chunk", count = 4},
+            {name = "mysticalagriculture:tier4_crafting_seed", count = 1},
+            {name = "mysticalagriculture:imperium_essence", count = 4}
         }
     },
     
-    -- Higher Tier Resource Seeds
+    -- TIER 5 SEEDS (Supremium Essence)
     ["diamond_seeds"] = {
         name = "Diamond Seeds",
         shortName = "Diamnd",
         output = "mysticalagriculture:diamond_seeds",
-        time = 25,
+        time = 20,
         ingredients = {
             {name = "minecraft:diamond", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:imperium_essence", count = 4}
+            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
     
     ["emerald_seeds"] = {
-        name = "Emerald Seeds", 
-        shortName = "Emrald",
+        name = "Emerald Seeds",
+        shortName = "Emrld",
         output = "mysticalagriculture:emerald_seeds",
-        time = 25,
+        time = 20,
         ingredients = {
             {name = "minecraft:emerald", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:imperium_essence", count = 4}
+            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
+            {name = "mysticalagriculture:supremium_essence", count = 4}
         }
     },
     
@@ -232,62 +272,21 @@ local seeds = {
         name = "Netherite Seeds",
         shortName = "Nether",
         output = "mysticalagriculture:netherite_seeds",
-        time = 30,
+        time = 20,
         ingredients = {
-            {name = "minecraft:netherite_ingot", count = 2},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
+            {name = "minecraft:netherite_ingot", count = 4},
+            {name = "mysticalagriculture:tier5_crafting_seed", count = 1},
             {name = "mysticalagriculture:supremium_essence", count = 4}
-        }
-    },
-    
-    -- Basic Nature Seeds
-    ["wood_seeds"] = {
-        name = "Wood Seeds",
-        shortName = "Wood",
-        output = "mysticalagriculture:wood_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:oak_log", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
-        }
-    },
-    
-    ["stone_seeds"] = {
-        name = "Stone Seeds",
-        shortName = "Stone",
-        output = "mysticalagriculture:stone_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:stone", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
-        }
-    },
-    
-    ["dirt_seeds"] = {
-        name = "Dirt Seeds",
-        shortName = "Dirt",
-        output = "mysticalagriculture:dirt_seeds",
-        time = 20,
-        ingredients = {
-            {name = "minecraft:dirt", count = 4},
-            {name = "mysticalagriculture:prosperity_seed_base", count = 1},
-            {name = "mysticalagriculture:inferium_essence", count = 4}
         }
     }
 }
 
--- Note: Recipe patterns may vary by modpack
--- Common patterns:
--- - Resource seeds: 4x resource + 1x seed base + 4x essence
--- - Mob seeds: 4x mob drops + 1x soulium seed base + 4x essence
--- - Essence seeds use soul jars or mob chunks instead of drops
-
--- Validate seeds table
-for id, _ in pairs(seeds) do
-    if id ~= "order" and type(seeds[id]) ~= "table" then
-        error("Invalid seed entry: " .. id)
+-- Validate all seeds have required fields
+for id, seed in pairs(seeds) do
+    if type(seed) == "table" then
+        assert(seed.name, "Seed " .. id .. " missing name")
+        assert(seed.output, "Seed " .. id .. " missing output")
+        assert(seed.ingredients, "Seed " .. id .. " missing ingredients")
     end
 end
 
