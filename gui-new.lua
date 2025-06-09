@@ -310,21 +310,22 @@ function gui.showSeedDetails(seed)
     monitor.setTextColor(colors.white)
     monitor.write("~5-7 seconds per seed")
     
-    -- Buttons
-    local buttonY = height - 8
+    -- Buttons at bottom of screen
+    local buttonY = height - 4
+    local buttonWidth = 12
+    local buttonHeight = 3
     
+    -- Back button (bottom left)
+    drawButton(2, buttonY, buttonWidth, buttonHeight, "Back", colors.gray, colors.white)
+    addButton("back", 2, buttonY, buttonWidth, buttonHeight, {type = "back"})
+    
+    -- Craft button (bottom right)
     if canCraft then
-        -- Craft button (green)
-        drawButton(math.floor(width/2) - 20, buttonY, 18, 3, "Craft", colors.green, colors.white)
-        addButton("craft", math.floor(width/2) - 20, buttonY, 18, 3, {type = "craft", seed = seed})
+        drawButton(width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, "Craft", colors.green, colors.white)
+        addButton("craft", width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, {type = "craft", seed = seed})
     else
-        -- Craft button (disabled/red)
-        drawButton(math.floor(width/2) - 20, buttonY, 18, 3, "Can't Craft", colors.red, colors.white)
+        drawButton(width - buttonWidth - 2, buttonY, buttonWidth, buttonHeight, "Can't Craft", colors.red, colors.white)
     end
-    
-    -- Back button
-    drawButton(math.floor(width/2) + 2, buttonY, 18, 3, "Back", colors.gray, colors.white)
-    addButton("back", math.floor(width/2) + 2, buttonY, 18, 3, {type = "back"})
 end
 
 -- Show quantity selector
