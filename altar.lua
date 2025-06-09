@@ -80,7 +80,10 @@ local function distributeIngredients(ingredients)
     
     -- Separate crafting seed from pedestal ingredients
     for _, ingredient in ipairs(ingredients) do
-        if ingredient.name:find("crafting_seed") or ingredient.name:find("seed_base") then
+        -- Check for any tier crafting seed (tier1 through tier5)
+        if ingredient.name:find("tier%d_crafting_seed") or 
+           ingredient.name:find("crafting_seed") or 
+           ingredient.name:find("seed_base") then
             seedBase = ingredient
         else
             table.insert(pedestalIngredients, ingredient)
