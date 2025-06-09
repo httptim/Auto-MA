@@ -194,11 +194,12 @@ local function loadModules()
         error("Failed to load configuration!")
     end
     
-    -- Load modules
-    me = dofile("me.lua")
-    altar = dofile("altar.lua") 
-    gui = dofile("gui.lua")
-    seeds = dofile("seeds.lua")
+    -- Load modules (using absolute paths)
+    local baseDir = "/mystical-automation"
+    me = dofile(baseDir .. "/me.lua")
+    altar = dofile(baseDir .. "/altar.lua") 
+    gui = dofile(baseDir .. "/gui.lua")
+    seeds = dofile(baseDir .. "/seeds.lua")
     
     -- Initialize modules with config
     local success, err

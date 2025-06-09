@@ -415,7 +415,8 @@ local function install()
     sleep(2)
     
     -- Ask if user wants to start now
-    term.setCursorPos(1, height - 1)
+    local _, termHeight = term.getSize()
+    term.setCursorPos(1, termHeight - 1)
     term.setTextColor(colors.yellow)
     write("Start the automation system now? (Y/n): ")
     local answer = read()

@@ -17,8 +17,8 @@ local currentScreen = "main"
 -- Initialize GUI
 function gui.init(cfg)
     config = cfg
-    me = dofile("me.lua")
-    seeds = dofile("seeds.lua")
+    me = dofile("/mystical-automation/me.lua")
+    seeds = dofile("/mystical-automation/seeds.lua")
     
     -- Connect to monitor
     monitor = peripheral.wrap(config.monitor)
