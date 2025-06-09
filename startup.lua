@@ -221,6 +221,7 @@ local state = {
 
 -- Event handlers
 local function handleTouch(x, y)
+    print("DEBUG: handleTouch called with x=" .. x .. " y=" .. y)
     if state.crafting then
         gui.showMessage("Craft in progress...")
         return
@@ -271,9 +272,11 @@ local function handleTouch(x, y)
             gui.showMainScreen()
         end
     end
+    print("DEBUG: handleTouch returning")
 end
 
 function startCraft(seed, quantity)
+    print("DEBUG: startCraft called")
     -- Check ingredients
     local canCraft, missing = me.checkIngredients(seed.ingredients, quantity)
     
@@ -287,6 +290,7 @@ function startCraft(seed, quantity)
     end
     
     -- Start the craft
+    print("DEBUG: Setting state.crafting = true")
     state.crafting = true
     state.currentSeed = seed  -- Store the seed in state!
     state.currentQuantity = quantity  -- Store quantity too
@@ -306,9 +310,12 @@ function startCraft(seed, quantity)
     end
     
     -- Show initial progress
+    print("DEBUG: Calling gui.showProgress")
     gui.showProgress(seed, 0)
     print("Craft started, monitoring progress...")
+    print("DEBUG: Current updateTimer = " .. tostring(updateTimer))
     print("Returning to event loop...")
+    print("DEBUG: startCraft function ending")
 end
 
 local function updateCraftProgress()
@@ -353,13 +360,13 @@ local function updateCraftProgress()
     end
 end
 
+-- Timer variable at module level so it's accessible everywhere
+local updateTimer = nil
+
 -- Main event loop
 local function main()
     -- Initial display
     gui.showMainScreen()
-    
-    -- Timer variable needs to be outside the loop to persist
-    local updateTimer = nil
     
     -- Start timer for updates
     updateTimer = os.startTimer(0.5)
@@ -370,8 +377,8 @@ local function main()
     
     while true do
         -- Debug: show we're about to pull event
-        if state.crafting and eventCount < 5 then
-            print("About to pull event...")
+        if state.crafting then
+            print("DEBUG: About to call os.pullEvent, eventCount=" .. eventCount .. " updateTimer=" .. tostring(updateTimer))
         end
         
         local event, p1, p2, p3 = os.pullEvent()
@@ -384,6 +391,7 @@ local function main()
         
         if event == "monitor_touch" then
             handleTouch(p2, p3) -- p2=x, p3=y
+            print("DEBUG: monitor_touch handled, continuing loop")
             
         elseif event == "timer" then
             -- Debug all timer events
@@ -401,15 +409,34 @@ local function main()
                 -- Update craft progress if needed
                 updateCraftProgress()
                 
-                -- Update ingredient availability
+                -- Update ingredient availability (fix the condition)
                 if state.screen == "main" and not state.crafting then
                     gui.updateAvailability()
+                elseif state.screen == "crafting" and state.crafting then
+                    -- Update GUI during crafting too
+                    local progress = altar.getProgress()
+                    if state.currentSeed then
+                        gui.showProgress(state.currentSeed, progress)
+                    end
                 end
                 
-                -- Restart timer
+                -- ALWAYS restart timer, not just when IDs match
                 updateTimer = os.startTimer(0.5)
                 if state.crafting then
                     print("New timer started with ID: " .. updateTimer)
+                end
+            else
+                -- Timer ID mismatch - this might happen if events queue up
+                if state.crafting then
+                    print("WARNING: Timer ID mismatch! Got " .. tostring(p1) .. " expected " .. tostring(updateTimer))
+                end
+                -- Make sure we have a timer running
+                if not updateTimer or p1 < updateTimer then
+                    -- This was an old timer, ignore it but make sure we have a new one
+                    updateTimer = os.startTimer(0.5)
+                    if state.crafting then
+                        print("Started replacement timer with ID: " .. updateTimer)
+                    end
                 end
             end
             
