@@ -72,34 +72,11 @@ function me.checkIngredients(ingredients, quantity)
     local items = me.listItems()
     local itemCounts = {}
     
-    -- Debug to file
-    local debugFile = fs.open("/me-debug.txt", "w")
-    debugFile.writeLine("ME Debug Log - " .. os.date())
-    debugFile.writeLine("=====================================")
-    debugFile.writeLine("")
-    
-    -- Log first 10 items to see structure
-    debugFile.writeLine("First 10 ME items:")
-    for i = 1, math.min(10, #items) do
-        local item = items[i]
-        debugFile.writeLine(string.format("Item %d:", i))
-        for k, v in pairs(item) do
-            debugFile.writeLine(string.format("  %s = %s (%s)", k, tostring(v), type(v)))
-        end
-        debugFile.writeLine("")
-    end
-    
-    debugFile.writeLine("Total items in ME: " .. #items)
-    debugFile.writeLine("")
-    
-    -- Build lookup table - use 'count' field (confirmed from ME Bridge data)
+    -- Build lookup table - use 'count' field
     for _, item in ipairs(items) do
         local quantity = item.count or 0
         itemCounts[item.name] = quantity
     end
-    
-    -- Log what we're checking
-    debugFile.writeLine("Checking ingredients for quantity " .. quantity .. ":")
     
     -- Check each ingredient
     local missing = {}
@@ -108,9 +85,6 @@ function me.checkIngredients(ingredients, quantity)
     for _, ingredient in ipairs(ingredients) do
         local required = ingredient.count * quantity
         local available = itemCounts[ingredient.name] or 0
-        
-        debugFile.writeLine(string.format("  Need %dx %s, have %d", 
-            required, ingredient.name, available))
         
         if available < required then
             canCraft = false
@@ -121,17 +95,6 @@ function me.checkIngredients(ingredients, quantity)
             ))
         end
     end
-    
-    debugFile.writeLine("")
-    debugFile.writeLine("Can craft: " .. tostring(canCraft))
-    if not canCraft then
-        debugFile.writeLine("Missing: " .. table.concat(missing, ", "))
-    end
-    
-    debugFile.close()
-    
-    -- Print a message so user knows debug was written
-    print("Debug info written to /me-debug.txt")
     
     if not canCraft then
         return false, table.concat(missing, ", ")
