@@ -126,18 +126,11 @@ function gui.showMainScreen()
         table.insert(seedList, {id = id, seed = seed})
     end
     
-    -- Sort by tier then name
+    -- Sort by name only (no tier field in data)
     table.sort(seedList, function(a, b)
-        -- Handle nil values
-        local aTier = a.seed.tier or 1
-        local bTier = b.seed.tier or 1
         local aName = a.seed.name or a.id
         local bName = b.seed.name or b.id
-        
-        if aTier == bTier then
-            return aName < bName
-        end
-        return aTier < bTier
+        return aName < bName
     end)
     
     -- Calculate pagination
@@ -155,8 +148,8 @@ function gui.showMainScreen()
         -- Determine color
         local bgColor = canCraft and theme.buttonActive or theme.button
         
-        -- Draw button
-        drawButton(2, y, width - 4, 2, "T" .. seed.tier .. " - " .. seed.name, bgColor)
+        -- Draw button (without tier since it's not in the data)
+        drawButton(2, y, width - 4, 2, seed.name, bgColor)
         
         -- Register button
         addButton("seed_" .. i, 2, y, width - 4, 2, {type = "seed", id = item.id})
