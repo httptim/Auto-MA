@@ -259,6 +259,12 @@ end
 
 -- Show progress bar
 function gui.showProgress(seed, progress)
+    print("DEBUG GUI: showProgress called with progress=" .. tostring(progress))
+    if not monitor then
+        print("ERROR: Monitor is nil!")
+        return
+    end
+    
     clear()
     buttons = {}
     currentScreen = "crafting"
@@ -269,6 +275,8 @@ function gui.showProgress(seed, progress)
     local barY = math.floor(height / 2) - 1
     local barWidth = width - 4
     local filled = math.floor(barWidth * progress)
+    
+    print(string.format("DEBUG GUI: Drawing progress bar - width=%d, filled=%d", barWidth, filled))
     
     monitor.setCursorPos(2, barY)
     monitor.setBackgroundColor(colors.gray)

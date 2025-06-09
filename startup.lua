@@ -332,6 +332,7 @@ startCraft = function(seed, quantity)
 end
 
 local function updateCraftProgress()
+    print("DEBUG: updateCraftProgress called, state.crafting=" .. tostring(state.crafting))
     if not state.crafting then return end
     
     if not state.currentSeed then
@@ -342,6 +343,8 @@ local function updateCraftProgress()
     -- Use altar's progress calculation
     local progress = altar.getProgress()
     local elapsed = os.clock() - state.craftStartTime
+    
+    print(string.format("DEBUG: Progress=%.2f, Elapsed=%.1fs", progress, elapsed))
     
     -- Debug: confirm timer is working
     if elapsed < 1 then
@@ -359,6 +362,7 @@ local function updateCraftProgress()
     end
     
     -- Always update GUI
+    print("DEBUG: Calling gui.showProgress with progress=" .. progress)
     gui.showProgress(state.currentSeed, progress)
     
     -- Check if complete
