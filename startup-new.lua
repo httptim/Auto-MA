@@ -235,8 +235,8 @@ local function monitorCraft()
             break
         end
         
-        -- Yield to allow other coroutines to run
-        coroutine.yield()
+        -- Small delay to not spam updates
+        sleep(0.2)  -- Faster updates for smoother progress bar
     end
     
     print("Craft monitor ended")
