@@ -19,9 +19,9 @@ local craftState = {
 }
 
 -- Initialize altar system
-function altar.init(cfg)
+function altar.init(cfg, meModule)
     config = cfg
-    me = dofile("/mystical-automation/me.lua") -- Get ME reference
+    me = meModule -- Use the already initialized ME module
     
     -- Connect to altar
     altarInv = peripheral.wrap(config.altar)

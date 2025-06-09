@@ -15,10 +15,10 @@ local buttons = {}
 local currentScreen = "main"
 
 -- Initialize GUI
-function gui.init(cfg)
+function gui.init(cfg, meModule, seedsData)
     config = cfg
-    me = dofile("/mystical-automation/me.lua")
-    seeds = dofile("/mystical-automation/seeds.lua")
+    me = meModule
+    seeds = seedsData
     
     -- Connect to monitor
     monitor = peripheral.wrap(config.monitor)

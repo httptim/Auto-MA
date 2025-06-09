@@ -411,6 +411,8 @@ local function install()
     if answer:lower() ~= "n" then
         term.clear()
         term.setCursorPos(1, 1)
+        term.setTextColor(colors.white)
+        term.setBackgroundColor(colors.black)
         shell.run("mystical")
     end
     

@@ -209,12 +209,12 @@ local function loadModules()
         error("Failed to initialize ME system: " .. tostring(err))
     end
     
-    success, err = pcall(altar.init, config)
+    success, err = pcall(altar.init, config, me)
     if not success then
         error("Failed to initialize altar system: " .. tostring(err))
     end
     
-    success, err = pcall(gui.init, config)
+    success, err = pcall(gui.init, config, me, seeds)
     if not success then
         error("Failed to initialize GUI: " .. tostring(err))
     end
@@ -250,6 +250,7 @@ local function handleTouch(x, y)
         
         -- Show quantity selector
         state.currentSeed = seed
+        state.currentQuantity = 1
         state.screen = "quantity"
         gui.showQuantitySelector(seed, 1)
         

@@ -23,9 +23,9 @@ function me.init(cfg)
     end
     
     -- Test connection
-    local success, items = pcall(bridge.listItems)
+    local success, result = pcall(function() return bridge.listItems() end)
     if not success then
-        error("ME Bridge is not responding. Check the connection.")
+        error("ME Bridge is not responding. Check the connection: " .. tostring(result))
     end
     
     print("ME Bridge connected successfully")
@@ -42,7 +42,7 @@ function me.listItems()
     end
     
     -- Fetch fresh item list
-    local success, items = pcall(bridge.listItems)
+    local success, items = pcall(function() return bridge.listItems() end)
     if not success then
         error("Failed to list ME items: " .. tostring(items))
     end
@@ -109,10 +109,14 @@ function me.exportItem(itemName, count, targetPeripheral)
     end
     
     -- Advanced Peripherals ME Bridge uses exportItemToPeripheral
-    local success, result = pcall(bridge.exportItemToPeripheral, {
+    local item = {
         name = itemName,
         count = count
-    }, targetPeripheral)
+    }
+    
+    local success, result = pcall(function()
+        return bridge.exportItemToPeripheral(item, targetPeripheral)
+    end)
     
     if not success then
         error("Failed to export " .. itemName .. ": " .. tostring(result))
@@ -128,10 +132,14 @@ function me.importItem(itemName, count, sourcePeripheral)
     end
     
     -- Advanced Peripherals ME Bridge uses importItemFromPeripheral
-    local success, result = pcall(bridge.importItemFromPeripheral, {
+    local item = {
         name = itemName,
         count = count
-    }, sourcePeripheral)
+    }
+    
+    local success, result = pcall(function()
+        return bridge.importItemFromPeripheral(item, sourcePeripheral)
+    end)
     
     if not success then
         error("Failed to import " .. itemName .. ": " .. tostring(result))
@@ -182,7 +190,7 @@ function me.isConnected()
         return false
     end
     
-    local success = pcall(bridge.listItems)
+    local success = pcall(function() return bridge.listItems() end)
     return success
 end
 
