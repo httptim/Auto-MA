@@ -35,8 +35,8 @@ shell.run("/mystical-automation/startup.lua")]]
     },
 }
 
--- Colors
-local colors = {
+-- Theme colors
+local theme = {
     title = colors.cyan,
     subtitle = colors.lightBlue,
     text = colors.white,
@@ -67,12 +67,12 @@ local scrollWindow = {
 -- Helper functions
 local function centerText(y, text, color)
     term.setCursorPos(math.floor((width - #text) / 2) + 1, y)
-    term.setTextColor(color or colors.text)
+    term.setTextColor(color or theme.text)
     term.write(text)
 end
 
 local function drawBox(x, y, w, h, title)
-    term.setTextColor(colors.box)
+    term.setTextColor(theme.box)
     term.setCursorPos(x, y)
     term.write("+" .. string.rep("-", w - 2) .. "+")
     

@@ -170,7 +170,7 @@ local function saveConfig(configData)
     end
     file.write("    },\n")
     file.write("    redstoneIntegrator = \"" .. configData.redstoneIntegrator .. "\",\n")
-    file.write("    redstoneSide = \"" .. configData.redstoneSide .. "\",\n")
+    file.write("    redstoneSide = \"" .. configData.redstoneSide .. "\"\n")
     file.write("}\n")
     
     file.close()

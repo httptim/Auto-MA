@@ -78,7 +78,11 @@ end
 
 -- Draw header
 local function drawHeader(title)
-    monitor.setBackgroundColor(config.settings.colors.header)
+    local headerColor = colors.blue
+    if config.settings and config.settings.colors and config.settings.colors.header then
+        headerColor = config.settings.colors.header
+    end
+    monitor.setBackgroundColor(headerColor)
     monitor.setTextColor(colors.white)
     monitor.setCursorPos(1, 1)
     monitor.write(string.rep(" ", width))
@@ -118,7 +122,11 @@ function gui.showMainScreen()
             if seed then
                 -- Check availability
                 local canCraft = me.checkIngredients(seed.ingredients, 1)
-                local bgColor = canCraft and config.settings.colors.available or config.settings.colors.unavailable
+                -- Use default colors if settings not present
+                local bgColor = canCraft and colors.green or colors.red
+                if config.settings and config.settings.colors then
+                    bgColor = canCraft and config.settings.colors.available or config.settings.colors.unavailable
+                end
                 
                 -- Draw button
                 local btnIndex = drawButton(x, y, buttonWidth, buttonHeight, seed.shortName or seed.name:sub(1, 6), bgColor, colors.white)
