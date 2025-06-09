@@ -412,7 +412,20 @@ local function install()
     addScrollLine("✓ Installation complete!", colors.success)
     addScrollLine("Run 'mystical' to start the automation system!", colors.success)
     
-    sleep(3)
+    sleep(2)
+    
+    -- Ask if user wants to start now
+    term.setCursorPos(1, height - 1)
+    term.setTextColor(colors.yellow)
+    write("Start the automation system now? (Y/n): ")
+    local answer = read()
+    
+    if answer:lower() ~= "n" then
+        term.clear()
+        term.setCursorPos(1, 1)
+        shell.run("mystical")
+    end
+    
     return true
 end
 

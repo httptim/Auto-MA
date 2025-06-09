@@ -69,9 +69,42 @@ local function setupWizard()
     end
     
     -- Select inventories for altar and pedestals
-    local inventories = peripherals.inventory or {}
+    -- MysticalAgriculture blocks might show as different types
+    local inventories = {}
+    
+    -- Collect all inventory-like peripherals
+    for pType, pList in pairs(peripherals) do
+        -- Check for various inventory types
+        if pType == "inventory" or 
+           pType == "mysticalagriculture:inferium_altar" or
+           pType == "mysticalagriculture:infusion_altar" or
+           pType == "mysticalagriculture:awakening_altar" or
+           pType == "mysticalagriculture:infusion_pedestal" or
+           pType == "mysticalagriculture:awakening_pedestal" or
+           pType:find("altar") or
+           pType:find("pedestal") or
+           pType:find("chest") or
+           pType:find("barrel") then
+            for _, name in ipairs(pList) do
+                table.insert(inventories, name)
+            end
+        end
+    end
+    
+    -- Debug: Show what we found
+    print("\nFound " .. #inventories .. " inventory-like peripherals:")
+    for pType, pList in pairs(peripherals) do
+        if #pList > 0 then
+            print("  " .. pType .. ": " .. #pList)
+        end
+    end
+    
     if #inventories < 9 then
-        error("Not enough inventories found! Need at least 9 (1 altar + 8 pedestals)")
+        print("\nDetected peripheral types:")
+        for pType, _ in pairs(peripherals) do
+            print("  - " .. pType)
+        end
+        error("Not enough inventories found! Need at least 9 (1 altar + 8 pedestals). Found: " .. #inventories)
     end
     
     print("\nNow we'll set up the altar and pedestals.")
