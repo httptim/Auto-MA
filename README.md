@@ -23,7 +23,7 @@ Automated seed crafting system for MysticalAgriculture using CC:Tweaked and Adva
 
 ### Hardware Setup
 1. **Computer** - Advanced Computer recommended
-2. **Monitor** - At least 3x3, larger is better
+2. **Monitor** - A 3x2 setup
 3. **ME Bridge** - Connected to your ME network
 4. **Infusion Altar** - The central crafting block
 5. **8 Infusion Pedestals** - Arranged around the altar
