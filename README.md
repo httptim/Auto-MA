@@ -44,7 +44,7 @@ wget run https://raw.githubusercontent.com/httptim/Auto-MA/main/installer.lua
 
 3. Run the program:
 ```
-mystical
+startup
 ```
 
 ## Usage
