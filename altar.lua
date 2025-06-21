@@ -89,10 +89,8 @@ local function distributeIngredients(ingredients)
             local toPlace = 1 -- Always 1 per pedestal for MysticalAgriculture
             
             -- Export to pedestal
-            local success = me.exportItem(ingredient.name, toPlace, config.pedestals[pedestalIndex])
-            if not success then
-                error("Failed to export " .. ingredient.name .. " to pedestal " .. pedestalIndex)
-            end
+            local result = me.exportItem(ingredient.name, toPlace, config.pedestals[pedestalIndex])
+            -- Result will be a table if successful, or throw error if failed
             
             table.insert(distributed, {
                 pedestal = pedestalIndex,
@@ -152,10 +150,8 @@ function altar.startSingleCraft(seed)
     
     -- Place seed base in altar
     if seedBase then
-        local success = me.exportItem(seedBase.name, seedBase.count, config.altar)
-        if not success then
-            error("Failed to place seed base in altar")
-        end
+        local result = me.exportItem(seedBase.name, seedBase.count, config.altar)
+        -- Result will be a table if successful, or throw error if failed
     end
     
     -- Mark craft start time

@@ -124,6 +124,11 @@ function me.exportItem(itemName, count, targetPeripheral)
         error("Failed to export " .. itemName .. ": " .. tostring(result))
     end
     
+    -- Check if export was successful (returns table or nil)
+    if result == nil then
+        error("Export failed for " .. itemName .. " - item not found or target full")
+    end
+    
     return result
 end
 
@@ -145,6 +150,12 @@ function me.importItem(itemName, count, sourcePeripheral)
     
     if not success then
         error("Failed to import " .. itemName .. ": " .. tostring(result))
+    end
+    
+    -- Check if import was successful (returns table or nil)
+    if result == nil then
+        -- This might be OK if there were no items to import
+        return nil
     end
     
     return result
