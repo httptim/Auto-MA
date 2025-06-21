@@ -71,9 +71,20 @@ local function setupWizard()
         error("No monitors found! Please attach a monitor.")
     end
     
-    -- Select ME Bridge
-    if peripherals.meBridge and #peripherals.meBridge > 0 then
-        selectedConfig.meBridge = selectFromList("Select ME Bridge:", peripherals.meBridge)
+    -- Select ME Bridge - handle new naming pattern (me_bridge_#)
+    local meBridges = {}
+    
+    -- Look for ME bridges with various possible type names
+    for _, name in ipairs(peripheral.getNames()) do
+        local pType = peripheral.getType(name)
+        -- Check if it's an ME Bridge by type pattern
+        if pType and (pType == "meBridge" or pType:match("^me_bridge") or pType:match("^mebridge")) then
+            table.insert(meBridges, name)
+        end
+    end
+    
+    if #meBridges > 0 then
+        selectedConfig.meBridge = selectFromList("Select ME Bridge:", meBridges)
     else
         error("No ME Bridge found! Please attach an ME Bridge from Advanced Peripherals.")
     end
