@@ -23,7 +23,7 @@ function me.init(cfg)
     end
     
     -- Test connection
-    local success, result = pcall(function() return bridge.listItems() end)
+    local success, result = pcall(function() return bridge.getItems() end)
     if not success then
         error("ME Bridge is not responding. Check the connection: " .. tostring(result))
     end
@@ -42,7 +42,7 @@ function me.listItems()
     end
     
     -- Fetch fresh item list
-    local success, items = pcall(function() return bridge.listItems() end)
+    local success, items = pcall(function() return bridge.getItems() end)
     if not success then
         error("Failed to list ME items: " .. tostring(items))
     end
@@ -60,7 +60,7 @@ function me.getItemCount(itemName)
     
     for _, item in ipairs(items) do
         if item.name == itemName then
-            return item.count or 0
+            return item.amount or 0
         end
     end
     
@@ -74,7 +74,8 @@ function me.checkIngredients(ingredients, quantity)
     
     -- Build lookup table - use 'count' field
     for _, item in ipairs(items) do
-        local quantity = item.count or 0
+        -- Use 'amount' field as per Advanced Peripherals documentation
+        local quantity = item.amount or 0
         itemCounts[item.name] = quantity
     end
     
@@ -109,14 +110,14 @@ function me.exportItem(itemName, count, targetPeripheral)
         error("ME Bridge not initialized")
     end
     
-    -- Advanced Peripherals ME Bridge uses exportItemToPeripheral
-    local item = {
+    -- Advanced Peripherals ME Bridge uses exportItem with filter
+    local filter = {
         name = itemName,
         count = count
     }
     
     local success, result = pcall(function()
-        return bridge.exportItemToPeripheral(item, targetPeripheral)
+        return bridge.exportItem(filter, targetPeripheral)
     end)
     
     if not success then
@@ -132,14 +133,14 @@ function me.importItem(itemName, count, sourcePeripheral)
         error("ME Bridge not initialized")
     end
     
-    -- Advanced Peripherals ME Bridge uses importItemFromPeripheral
-    local item = {
+    -- Advanced Peripherals ME Bridge uses importItem with filter
+    local filter = {
         name = itemName,
         count = count
     }
     
     local success, result = pcall(function()
-        return bridge.importItemFromPeripheral(item, sourcePeripheral)
+        return bridge.importItem(filter, sourcePeripheral)
     end)
     
     if not success then
@@ -191,7 +192,7 @@ function me.isConnected()
         return false
     end
     
-    local success = pcall(function() return bridge.listItems() end)
+    local success = pcall(function() return bridge.getItems() end)
     return success
 end
 
