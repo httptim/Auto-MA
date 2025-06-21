@@ -51,16 +51,6 @@ function me.listItems()
     itemCache.items = items or {}
     itemCache.lastUpdate = now
     
-    -- Debug: Log item count and sample
-    print("[ME Debug] Total items in system: " .. #itemCache.items)
-    if #itemCache.items > 0 then
-        local sample = itemCache.items[1]
-        print("[ME Debug] Sample item:")
-        for k, v in pairs(sample) do
-            print("  " .. k .. " = " .. tostring(v))
-        end
-    end
-    
     return itemCache.items
 end
 
@@ -70,7 +60,7 @@ function me.getItemCount(itemName)
     
     for _, item in ipairs(items) do
         if item.name == itemName then
-            return item.amount or 0
+            return item.count or 0
         end
     end
     
@@ -84,16 +74,9 @@ function me.checkIngredients(ingredients, quantity)
     
     -- Build lookup table - use 'count' field
     for _, item in ipairs(items) do
-        -- Use 'amount' field as per Advanced Peripherals documentation
-        local quantity = item.amount or 0
+        -- Use 'count' field as confirmed by user
+        local quantity = item.count or 0
         itemCounts[item.name] = quantity
-    end
-    
-    -- Debug: Print what we're looking for
-    print("[ME Debug] Checking ingredients for quantity: " .. quantity)
-    for _, ingredient in ipairs(ingredients) do
-        print("[ME Debug] Need: " .. ingredient.count .. "x " .. ingredient.name)
-        print("[ME Debug] Have: " .. (itemCounts[ingredient.name] or 0))
     end
     
     -- Check each ingredient
